@@ -62,8 +62,39 @@ return array(
 	 * Paths specified here are expected to contain the assets they point to
 	 */
 	'folders' => array(
-		'css' => array(),
-		'js'  => array(),
+		'css' => array(
+			'assets/vendors/bootstrap/dist/css/', 
+			'assets/build/css/', 
+			'assets/vendors/font-awesome/css/',
+			'assets/vendors/jqvmap/dist/',
+			'assets/vendors/bootstrap-daterangepicker/',
+			'assets/vendors/nprogress/',
+			'assets/vendors/iCheck/skins/flat/',
+			'assets/vendors/bootstrap-progressbar/css/',
+			'assets/vendors/animate.css/',
+		),
+		'js'  => array(
+			'assets/vendors/jquery/dist/',
+			'assets/vendors/bootstrap/dist/js/',
+			'assets/vendors/fastclick/lib/',
+			'assets/vendors/nprogress/',
+			'assets//vendors/Chart.js/dist/',
+			'assets/vendors/gauge.js/dist/',
+			'assets/vendors/bootstrap-progressbar/',
+			'assets/vendors/iCheck/',
+			'assets/vendors/skycons/',
+			'assets/vendors/Flot/',
+			'assets/vendors/flot.orderbars/js/',
+			'assets/vendors/flot-spline/js/',
+			'assets/vendors/flot.curvedlines/',
+			'assets/vendors/DateJS/build/',
+			'assets/vendors/jqvmap/dist/',
+			'assets/vendors/jqvmap/dist/maps/',
+			'assets/vendors/jqvmap/examples/js/',
+			'assets/vendors/moment/min/',
+			'assets/vendors/bootstrap-daterangepicker/',
+			'assets/build/js/'
+		),
 		'img' => array(),
 	),
 
