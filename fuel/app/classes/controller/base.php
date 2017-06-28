@@ -8,10 +8,8 @@ class Controller_Base extends Controller_Template
 
 		$this->current_user = null;
 
-		foreach (\Auth::verified() as $driver)
-		{
-			if (($id = $driver->get_user_id()) !== false)
-			{
+		foreach (\Auth::verified() as $driver){
+			if (($id = $driver->get_user_id()) !== false){
 				$this->current_user = Model\Auth_User::find($id[1]);
 			}
 			break;

@@ -8,7 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Gentelella Alela! | </title>
+    <title>Tooltest</title>
 
     <!-- Bootstrap -->
     <?php echo Asset::css('bootstrap.min.css'); ?>
@@ -43,7 +43,7 @@
               </div>
               <div>
                 <a class="btn btn-default submit" href="index.html">Log in</a>
-                <a class="reset_pass" href="#">Lost your password?</a>
+                <a class="reset_pass" href="forgotpassword">Lost your password?</a>
               </div>
 
               <div class="clearfix"></div>

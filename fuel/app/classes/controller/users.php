@@ -6,10 +6,8 @@ class Controller_Users extends Controller_Base
 	{
 		parent::before();
 
-		if (Request::active()->controller !== 'Controller_Users' or ! in_array(Request::active()->action, array('index','login','logout')))
-		{
-			if (Auth::check())
-			{
+		if (Request::active()->controller !== 'Controller_Users' or ! in_array(Request::active()->action, array('index','login','logout','forgotpassword'))){
+			if (Auth::check()){
 				// $admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
 				// if ( ! Auth::member($admin_group_id))
 				// {
@@ -19,9 +17,7 @@ class Controller_Users extends Controller_Base
                     die('aaa');
 					Response::redirect('users/index');
 				// }
-			}
-			else
-			{
+			}else{
 				die('aaaaaa');
                 Response::redirect('users/login');
 			}
@@ -47,41 +43,31 @@ class Controller_Users extends Controller_Base
 
         $val = Validation::forge();
 
-        if (Input::method() == 'POST')
-        {
+        if (Input::method() == 'POST'){
             // die('OK');
             $val->add('email', 'Email or Username')
                 ->add_rule('required');
             $val->add('password', 'Password')
                 ->add_rule('required');
 
-            if ($val->run())
-            {
-                if ( ! Auth::check())
-                {
-                    if (Auth::login(Input::post('email'), Input::post('password')))
-                    {
+            if ($val->run()){
+                if ( ! Auth::check()){
+                    if (Auth::login(Input::post('email'), Input::post('password'))){
                         // die('aaa');
                         // assign the user id that lasted updated this record
-                        foreach (\Auth::verified() as $driver)
-                        {
-                            if (($id = $driver->get_user_id()) !== false)
-                            {
+                        foreach (\Auth::verified() as $driver){
+                            if (($id = $driver->get_user_id()) !== false){
                                 // credentials ok, go right in
                                 $current_user = Model\Auth_User::find($id[1]);
                                 Session::set_flash('success', e('Welcome, '.$current_user->username));
                                 Response::redirect('users/index');
                             }
                         }
-                    }
-                    else
-                    {
+                    }else{
                         //$this->template->set_global('login_error', 'The username or password is incorrect!');
                         Session::set_flash('error', 'The username or password is incorrect!');
                     }
-                }
-                else
-                {
+                }else{
                     $this->template->set_global('login_error', 'Already logged in!');
                 }
             }
@@ -125,10 +111,8 @@ class Controller_Users extends Controller_Base
             ->add_rule('required')       
             ->add_rule('valid_email');
         // Running validation   
-        if ($val->run())    
-        {        
-            try 
-            {            
+        if ($val->run()) {        
+            try {            
                 // Since validation passed, we try to create a user            
                 $user_id = Auth::create_user(                
                     Input::post('username'),                
@@ -136,8 +120,7 @@ class Controller_Users extends Controller_Base
                     Input::post('email')       
                 );
 
-                if($user_id)
-                {
+                if ($user_id) {
                     $hash = \Auth::instance()->hash_password(\Str::random());
                     $hash = base64_encode($hash);
 
@@ -171,20 +154,15 @@ class Controller_Users extends Controller_Base
 
                 $email->from('azzurricatenacciomilano@gmail.com', 'Support Demo App');
                 $email->to('manhnvit@gmail.com', 'Its the Other!');
-                try
-                {
+                try {
                     $email->send();
                     Session::set_flash('success', e('Verification email send successfully. Please confirm for active account.'));
                     Response::redirect('admin/index'); 
-                }
-                catch(\EmailValidationFailedException $e)
-                {
+                } catch(\EmailValidationFailedException $e) {
                     // The validation failed
                     \Debug::dump($e);               
                     Session::set_flash('error',$e->getMessage());
-                }
-                catch(\EmailSendingFailedException $e)
-                {
+                } catch(\EmailSendingFailedException $e) {
                     // The driver could not send the email
                     \Debug::dump($e);           
                     Session::set_flash('error',$e->getMessage());
@@ -192,15 +170,11 @@ class Controller_Users extends Controller_Base
 
                 // Session::set_flash('success', e('Welcome '.Input::post('username').'!'));
                 // Response::redirect('admin/index');        
-            } 
-            catch (\SimpleUserUpdateException $e) 
-            {            
+            } catch (\SimpleUserUpdateException $e) {            
             // Either the username or email already exists            
                 Session::set_flash('error', e($e->getMessage()));
             }
-        }    
-        else    
-        {        
+        } else {        
         // At least one field is not correct        
             Session::set_flash('error', e($val->error()));    
         }
@@ -215,8 +189,7 @@ class Controller_Users extends Controller_Base
 
     public function action_verification($hash = NULL)
     {
-        if (Input::method() == 'GET')
-        {
+        if (Input::method() == 'GET') {
             $hashinfo = Model_Hash::find('first', array(
                 'where' => array(
                     array('hash', $hash),
@@ -224,11 +197,9 @@ class Controller_Users extends Controller_Base
             ));
 
             // and find the user with this id
-            if ($user = \Model\Auth_User::find_by_id($hashinfo->user_id))
-            {
+            if ($user = \Model\Auth_User::find_by_id($hashinfo->user_id)) {
                 // do we have this hash for this user, and hasn't it expired yet (we allow for 24 hours response)?
-                if (isset($user) and (time() - $hashinfo->created_at < 86400))
-                {
+                if (isset($user) and (time() - $hashinfo->created_at < 86400)) {
                     // invalidate the hash
                     \Auth::update_user(
                         array(
@@ -238,8 +209,7 @@ class Controller_Users extends Controller_Base
                     );
 
                     // log the user in and go to the profile to change the password
-                    if (\Auth::instance()->force_login($user->id))
-                    {
+                    if (\Auth::instance()->force_login($user->id)) {
                         Session::set_flash('success', e('Verification successfully.'));
                         \Response::redirect('admin/index');
                     }
@@ -248,6 +218,11 @@ class Controller_Users extends Controller_Base
 
             return View::forge('admin/waitverify');
         }
+    }
+
+    public function action_forgotpassword()
+    {
+        return Response::forge(View::forge('forgotpassword'));
     }
 
     public function action_changeemail()
