@@ -76,16 +76,13 @@ class Controller_User extends Controller_Base
     {
         is_null($id) and Response::redirect('user');
 
-        $user = Model_User::find_one_by_id($id);
+        $user = Model_User::find($id);
 
         if (Input::method() == 'POST') {
             $val = Model_User::validate('edit');
 
             if ($val->run()) {
-                $user->name = Input::post('name');
-                $user->address = Input::post('address');
-                $user->phone = Input::post('phone');
-                $user->description = Input::post('description');
+                $user->name = Input::post('username');
                 $user->email = Input::post('email');
 
                 if ($user->save()) {
@@ -107,7 +104,7 @@ class Controller_User extends Controller_Base
 
     public function action_delete($id = null)
     {
-        if ($user = Model_User::find_one_by_id($id)) {
+        if ($user = Model_User::find($id)) {
             $user->delete();
 
             Session::set_flash('success', 'Deleted user #'.$id);
