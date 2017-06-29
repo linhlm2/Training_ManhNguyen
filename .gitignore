@@ -28,7 +28,7 @@
 .project
 .settings
 *.tmproj
-build
+#build
 .idea
 nbproject/
 
