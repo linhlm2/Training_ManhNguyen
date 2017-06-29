@@ -1,35 +1,122 @@
 <?php
 
-class Controller_Users extends Controller_Base
+class Controller_User extends Controller_Base
 {
-	public function before()
-	{
-		parent::before();
+	// public function before()
+	// {
+	// 	parent::before();
 
-		if (Request::active()->controller !== 'Controller_Users' or ! in_array(Request::active()->action, array('index','login','logout','forgotpassword'))){
-			if (Auth::check()){
-				// $admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
-				// if ( ! Auth::member($admin_group_id))
-				// {
-				// 	Session::set_flash('error', e('You don\'t have access to the admin panel'));
-				// 	Response::redirect('/');
-				// }else{
-                    die('aaa');
-					Response::redirect('users/index');
-				// }
-			}else{
-				die('aaaaaa');
-                Response::redirect('users/login');
-			}
-		}
-	}
+	// 	if (Request::active()->controller !== 'Controller_User' or ! in_array(Request::active()->action, array('index','login','logout','forgotpassword'))){
+	// 		if (Auth::check()){
+	// 			$admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
+	// 			if ( ! Auth::member($admin_group_id))
+	// 			{
+	// 				Session::set_flash('error', e('You don\'t have access to the admin panel'));
+	// 				Response::redirect('/');
+	// 			}else{
+	// 				Response::redirect('user/index');
+	// 			}
+	// 		}else{
+	// 			die('aaaaaa');
+ //                Response::redirect('user/login');
+	// 		}
+	// 	}
+	// }
 
 
 
     public function action_index()
     {
-        $this->template->title = 'Index';
-        $this->template->content = View::forge('users/index');
+        $data['users'] = Model_User::find('all');
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/index', $data);
+
+    }
+
+    public function action_view($id = null)
+    {
+        is_null($id) and Response::redirect('user');
+
+        $data['user'] = Model_User::find($id);
+
+        $this->template->title = "User";
+        $this->template->content = View::forge('user/view', $data);
+
+    }
+
+    public function action_create()
+    {
+        if (Input::method() == 'POST') {
+            $val = Model_User::validate('create');
+
+            if ($val->run()) {
+                $user_id = Auth::create_user(                
+                    Input::post('username'),                
+                    '12345678',                
+                    Input::post('email')       
+                );
+
+                if ($user_id) {
+                    Session::set_flash('success', 'Added user #'.$user_id.'.');
+                    Response::redirect('user');
+                } else {
+                    Session::set_flash('error', 'Could not save user.');
+                }
+            } else {
+                Session::set_flash('error', $val->error());
+            }
+        }
+
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/create');
+
+    }
+
+    public function action_edit($id = null)
+    {
+        is_null($id) and Response::redirect('user');
+
+        $user = Model_User::find_one_by_id($id);
+
+        if (Input::method() == 'POST') {
+            $val = Model_User::validate('edit');
+
+            if ($val->run()) {
+                $user->name = Input::post('name');
+                $user->address = Input::post('address');
+                $user->phone = Input::post('phone');
+                $user->description = Input::post('description');
+                $user->email = Input::post('email');
+
+                if ($user->save()) {
+                    Session::set_flash('success', 'Updated user #'.$id);
+                    Response::redirect('user');
+                } else {
+                    Session::set_flash('error', 'Nothing updated.');
+                }
+            } else {
+                Session::set_flash('error', $val->error());
+            }
+        }
+
+        $this->template->set_global('user', $user, false);
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/edit');
+
+    }
+
+    public function action_delete($id = null)
+    {
+        if ($user = Model_User::find_one_by_id($id)) {
+            $user->delete();
+
+            Session::set_flash('success', 'Deleted user #'.$id);
+        } else {
+            Session::set_flash('error', 'Could not delete user #'.$id);
+        }
+
+        Response::redirect('user');
+
     }
 
 
@@ -38,12 +125,12 @@ class Controller_Users extends Controller_Base
     {
         // if (Auth::check()) 
         // {
-        //     Response::redirect('users/login');
+        //     Response::redirect('user/login');
         // }
 
         $val = Validation::forge();
 
-        if (Input::method() == 'POST'){
+        if (Input::method() == 'POST') {
             // die('OK');
             $val->add('email', 'Email or Username')
                 ->add_rule('required');
@@ -51,23 +138,23 @@ class Controller_Users extends Controller_Base
                 ->add_rule('required');
 
             if ($val->run()){
-                if ( ! Auth::check()){
+                if ( ! Auth::check()) {
                     if (Auth::login(Input::post('email'), Input::post('password'))){
                         // die('aaa');
                         // assign the user id that lasted updated this record
-                        foreach (\Auth::verified() as $driver){
+                        foreach (\Auth::verified() as $driver) {
                             if (($id = $driver->get_user_id()) !== false){
                                 // credentials ok, go right in
                                 $current_user = Model\Auth_User::find($id[1]);
                                 Session::set_flash('success', e('Welcome, '.$current_user->username));
-                                Response::redirect('users/index');
+                                Response::redirect('user/index');
                             }
                         }
-                    }else{
+                    } else {
                         //$this->template->set_global('login_error', 'The username or password is incorrect!');
                         Session::set_flash('error', 'The username or password is incorrect!');
                     }
-                }else{
+                } else {
                     $this->template->set_global('login_error', 'Already logged in!');
                 }
             }
@@ -184,7 +271,7 @@ class Controller_Users extends Controller_Base
     {
         Auth::logout();
         Session::set_flash('success', 'You have been successfully logged out');
-        Response::redirect('users/login');
+        Response::redirect('user/login');
     }
 
     public function action_verification($hash = NULL)

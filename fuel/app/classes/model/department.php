@@ -1,17 +1,15 @@
 <?php
+use Orm\Model;
 
-class Model_User extends \Orm\Model
+class Model_Department extends Model
 {
 	protected static $_properties = array(
 		'id',
-		'username',
-		'password',
-		'group_id',
+		'name',
+		'address',
+		'phone',
+		'description',
 		'email',
-		'last_login',
-		'previous_login',
-		'login_hash',
-		'user_id',
 		'created_at',
 		'updated_at',
 	);
@@ -22,22 +20,21 @@ class Model_User extends \Orm\Model
 			'mysql_timestamp' => false,
 		),
 		'Orm\Observer_UpdatedAt' => array(
-			'events' => array('before_update'),
+			'events' => array('before_save'),
 			'mysql_timestamp' => false,
 		),
 	);
 
-	protected static $_table_name = 'users';
-
 	public static function validate($factory)
 	{
 		$val = Validation::forge($factory);
-		$val->add_field('username', 'Username', 'required|valid_string[alpha,lowercase,numeric]|max_length[50]');
-		// $val->add_field('address', 'Address', 'required');
-		// $val->add_field('phone', 'Phone', 'required|max_length[255]');
+		$val->add_field('name', 'Name', 'required|max_length[255]');
+		$val->add_field('address', 'Address', 'required');
+		$val->add_field('phone', 'Phone', 'required|max_length[255]');
 		// $val->add_field('description', 'Description', 'required');
 		$val->add_field('email', 'Email', 'required|valid_email|max_length[255]');
 
 		return $val;
 	}
+
 }

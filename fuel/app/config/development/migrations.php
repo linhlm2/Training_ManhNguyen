@@ -4,7 +4,10 @@ return array (
   array (
     'app' => 
     array (
-      'default' => 0,
+      'default' => 
+      array (
+        0 => '001_create_departments',
+      ),
     ),
     'module' => 
     array (
