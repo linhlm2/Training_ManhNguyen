@@ -72,6 +72,7 @@ return array(
 			'assets/vendors/iCheck/skins/flat/',
 			'assets/vendors/bootstrap-progressbar/css/',
 			'assets/vendors/animate.css/',
+			'assets/vendors/bootstrap-datetimepicker/build/css/'
 		),
 		'js'  => array(
 			'assets/vendors/jquery/dist/',
@@ -93,7 +94,8 @@ return array(
 			'assets/vendors/jqvmap/examples/js/',
 			'assets/vendors/moment/min/',
 			'assets/vendors/bootstrap-daterangepicker/',
-			'assets/build/js/'
+			'assets/build/js/',
+			'assets/vendors/bootstrap-datetimepicker/build/js/'
 		),
 		'img' => array(),
 	),

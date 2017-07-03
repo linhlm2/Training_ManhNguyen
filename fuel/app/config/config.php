@@ -278,6 +278,7 @@ return array(
 			'auth',
 			'parser',
 			'email',
+			'lbfaker',
 		),
 
 		/**
