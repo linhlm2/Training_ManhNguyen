@@ -1,5 +1,19 @@
 <h2>Listing <span class='muted'>Users</span></h2>
 <br>
+<?php if (Session::get_flash('success')): ?>
+    <div class="alert alert-success alert-dismissable">
+      <p>
+      <?php echo implode('</p><p>', (array) Session::get_flash('success')); ?>
+      </p>
+    </div>
+  <?php endif; ?>
+  <?php if (Session::get_flash('error')): ?>
+    <div class="alert alert-danger alert-dismissable">
+      <p>
+      <?php echo implode('</p><p>', (array) Session::get_flash('error')); ?>
+      </p>
+    </div>
+  <?php endif; ?>
 <?php if ($users): ?>
 	<table class="table table-striped">
 		<thead>

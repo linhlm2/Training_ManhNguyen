@@ -33,16 +33,46 @@
       <div class="login_wrapper">
         <div class="animate form login_form">
           <section class="login_content">
-            <form>
+            <?php echo Form::open(array('class'=> 'login-form')); ?>
+            <!-- <form> -->
               <h1>Login Form</h1>
-              <div>
+              <?php echo Form::csrf(); ?>
+              <?php if (isset($_GET['destination'])): ?>
+                <?php echo Form::hidden('destination', $_GET['destination']); ?>
+              <?php endif; ?>
+
+              <?php if (isset($login_error)): ?>
+                <div class="error"><?php echo $login_error; ?></div>
+              <?php endif; ?>
+
+             <!--  <div>
                 <input type="text" class="form-control" placeholder="Username or Email" required="" />
+              </div> -->
+
+              <div class="form-group <?php echo ! $val->error('email') ?: 'has-error' ?>" style="margin-bottom: 25px">
+                <!-- <label for="email">Email or Username:</label> -->
+                <?php echo Form::input('email', Input::post('email'), array('class' => 'form-control', 'placeholder' => 'Email or Username', 'autofocus')); ?>
+
+                <?php if ($val->error('email')): ?>
+                  <span class="control-label"><?php echo $val->error('email')->get_message('You must provide a username or email'); ?></span>
+                <?php endif; ?>
               </div>
-              <div>
+
+              <!-- <div>
                 <input type="password" class="form-control" placeholder="Password" required="" />
+              </div> -->
+  
+              <div class="form-group <?php echo ! $val->error('password') ?: 'has-error' ?>" style="margin-bottom: 25px">
+                <!-- <label for="password">Password:</label> -->
+                <?php echo Form::password('password', null, array('class' => 'form-control', 'placeholder' => 'Password')); ?>
+
+                <?php if ($val->error('password')): ?>
+                  <span class="control-label"><?php echo $val->error('password')->get_message(':label cannot be blank'); ?></span>
+                <?php endif; ?>
               </div>
+
               <div>
-                <a class="btn btn-default submit" href="index.html">Log in</a>
+                <button class="btn btn-default submit" type="submit">Log in</button>
                 <a class="reset_pass" href="forgotpassword">Lost your password?</a>
               </div>
 
@@ -61,7 +91,8 @@
                   <p>©2016 All Rights Reserved. Privacy and Terms</p>
                 </div>
               </div>
-            </form>
+            <!-- </form> -->
+            <?php echo Form::close(); ?>
           </section>
         </div>
 
