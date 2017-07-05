@@ -37,20 +37,16 @@ class Model_User extends \Orm\Model
 	        'cascade_save' => true,
 	        'cascade_delete' => false,
 	    ),
-	    // 'deparment' => array(
-	    //     'key_from' => 'id',
-	    //     'model_to' => 'Model_Department',
-	    //     'key_to' => 'deparment_id',
-	    //     'cascade_save' => true,
-	    //     'cascade_delete' => false,
-	    // ),
-	    // 'position' => array(
-	    //     'key_from' => 'id',
-	    //     'model_to' => 'Model_Position',
-	    //     'key_to' => 'position_id',
-	    //     'cascade_save' => true,
-	    //     'cascade_delete' => false,
-	    // ),
+	);
+
+	protected static $_has_many = array(
+	    'hashes' => array(
+	        'key_from' => 'id',
+	        'model_to' => 'Model_Hash',
+	        'key_to' => 'user_id',
+	        'cascade_save' => true,
+	        'cascade_delete' => false,
+	    )
 	);
 
 	public static function validate($factory)

@@ -26,12 +26,24 @@
 
 <p>
 	<strong>Department:</strong>
-	<?php echo $user->profile->department->name; ?>
+	<?php 
+		if ((!empty($user->profile->department))) {
+			echo $user->profile->department->name;
+		} else {
+			echo '';
+		}
+	?>
 </p>
 
 <p>
 	<strong>Position:</strong>
-	<?php echo $user->profile->position->name; ?>
+	<?php 
+		if ((!empty($user->profile->position))) {
+			echo $user->profile->position->name;
+		} else {
+			echo '';
+		}
+	?>
 </p>
 
 
@@ -50,5 +62,5 @@
 	<?php $gender = ($user->profile->gender != NULL &&  $user->profile->gende == 0) ? 'Female' : 'Male'; echo $gender; ?>
 </p>
 
-<?php echo Html::anchor('user/edit/'.$user->id, 'Edit'); ?> |
+<?php //echo Html::anchor('user/edit/'.$user->id, 'Edit'); ?>
 <?php echo Html::anchor('user', 'Back'); ?>

@@ -14,7 +14,7 @@
     <?php echo Asset::css('bootstrap.min.css'); ?>
 
     <!-- Font Awesome -->
-    <?php echo Asset::css('font-awesome.css'); ?>
+    <?php echo Asset::css('font-awesome.min.css'); ?>
 
     <!-- NProgress -->
     <?php echo Asset::css('nprogress.css'); ?>
@@ -55,7 +55,10 @@
               </div>
               <div class="profile_info">
                 <span>Welcome,</span>
-                <h2>John Doe</h2>
+                <?php if (Session::get('user_info')): ?>
+                  <!-- <h2>John Doe</h2> -->
+                  <h2><?php echo Session::get('user_info'); ?></h2>
+                <?php endif; ?>
               </div>
             </div>
             <!-- /menu profile quick info -->
@@ -68,10 +71,11 @@
                 <h3>General</h3>
                 <ul class="nav side-menu">
                   <li>
-                    <a href="index"><i class="fa fa-home"></i> Home </a>
+                    <a href="index" id="homepage"><i class="fa fa-home"></i> Home </a>
                   </li>
                   <li>
-                    <a href="index"><i class="fa fa-edit"></i> Department </a>
+                    <!-- <a href="department" id="departmentpage"><i class="fa fa-edit"></i>  </a> -->
+                    <?php echo Html::anchor('department/index', '<i class="fa fa-edit"></i> Department'); ?>
                   </li>
                 </ul>
               </div>
@@ -80,7 +84,7 @@
             <!-- /sidebar menu -->
 
             <!-- /menu footer buttons -->
-            <div class="sidebar-footer hidden-small">
+            <!-- <div class="sidebar-footer hidden-small">
               <a data-toggle="tooltip" data-placement="top" title="Settings">
                 <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
               </a>
@@ -93,7 +97,7 @@
               <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
                 <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
               </a>
-            </div>
+            </div> -->
             <!-- /menu footer buttons -->
           </div>
         </div>
@@ -110,7 +114,10 @@
                 <li class="">
                   <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                     <!-- <img src="images/img.jpg" alt=""> -->
-                    <?php echo Asset::img('img.jpg', array('alt' => '')) ?>John Doe
+                    <?php if (Session::get('user_info')): ?>
+                      <!-- <h2>John Doe</h2> -->
+                      <?php echo Asset::img('img.jpg', array('alt' => '')) ?><?php echo Session::get('user_info'); ?>
+                    <?php endif; ?>
                     <span class=" fa fa-angle-down"></span>
                   </a>
                   <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -122,11 +129,12 @@
                       </a>
                     </li>
                     <li><a href="javascript:;">Help</a></li>
-                    <li><a href="login.html"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
+                    <!-- <li><a href="login/logout"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li> -->
+                    <li><?php echo Html::anchor('login/logout/', '<i class="fa fa-sign-out pull-right"></i> Log Out'); ?> </li>
                   </ul>
                 </li>
 
-                <li role="presentation" class="dropdown">
+                <!-- <li role="presentation" class="dropdown">
                   <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
                     <i class="fa fa-envelope-o"></i>
                     <span class="badge bg-green">6</span>
@@ -189,7 +197,7 @@
                       </div>
                     </li>
                   </ul>
-                </li>
+                </li> -->
               </ul>
             </nav>
           </div>
@@ -269,6 +277,9 @@
     
     <!-- Datepicker -->
     <?php echo Asset::js('bootstrap-datetimepicker.min.js') ?>
+
+    <!-- CustomJS -->
+    <?php echo Asset::js('personal.js') ?>
 
   </body>
 </html>
