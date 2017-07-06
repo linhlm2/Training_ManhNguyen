@@ -31,7 +31,7 @@ class Controller_Department extends Controller_Template
 
 			if ($val->run()) {
 				//Check unique record
-				$tmp = Model_Department::find('first',array(             //
+				$tmp = Model_Department::find('first',array(             //record for compare with unique condition
 					'where' => array(
 				        array('name', Input::post('name')),
 				        'or' => array(
@@ -90,6 +90,9 @@ class Controller_Department extends Controller_Template
 			            array('email', Input::post('email')),
 			        ),
 			    ),
+			    'where' => array(
+			    	array('id', '<>' , $id)
+			    )
 			));
 
 			if (empty($tmp) && $tmp == NULL) {
@@ -119,10 +122,10 @@ class Controller_Department extends Controller_Template
 
 				Session::set_flash('error', $val->error());
 			}
-
-			$this->template->set_global('department', $department, false);
+			
 		}
 
+		$this->template->set_global('department', $department, false);
 		$this->template->title = "Departments";
 		$this->template->content = View::forge('department/edit');
 

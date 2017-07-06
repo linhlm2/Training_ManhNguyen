@@ -71,11 +71,15 @@
                 <h3>General</h3>
                 <ul class="nav side-menu">
                   <li>
-                    <a href="index" id="homepage"><i class="fa fa-home"></i> Home </a>
+                    <!-- <a href="index" id="homepage"><i class="fa fa-home"></i> Home </a> -->
+                    <?php echo Html::anchor('user/index', '<i class="fa fa-home"></i> Home'); ?>
                   </li>
                   <li>
                     <!-- <a href="department" id="departmentpage"><i class="fa fa-edit"></i>  </a> -->
                     <?php echo Html::anchor('department/index', '<i class="fa fa-edit"></i> Department'); ?>
+                  </li>
+                  <li>
+                    <?php echo Html::anchor('position/index', '<i class="fa fa-edit"></i> Position'); ?>
                   </li>
                 </ul>
               </div>

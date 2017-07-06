@@ -4,7 +4,7 @@ use \Model\Profile;
 use \Model\Position;
 use \Model\Department;
 
-class Controller_Login extends Controller_Template
+class Controller_Login extends Controller
 {
 
 	public function action_index()
@@ -31,7 +31,7 @@ class Controller_Login extends Controller_Template
                             if (($id = $driver->get_user_id()) !== false){
                                 // credentials ok, go right in
                                 $current_user = Model\Auth_User::find($id[1]);
-                                Session::set_flash('success', e('Welcome, '.$current_user->username));
+                                
                                 $profile = Model_Profile::find('first', array(
 				                    'related' => array(
 		                                'position',
@@ -41,15 +41,42 @@ class Controller_Login extends Controller_Template
 		                              	array('user_id', $current_user->id)
 				                    )
 				                ));
-                                Session::set(array(
+
+
+				                if(empty($profile)) {
+				                	$position_id = 0;
+				                	$department_id = 0;
+				                	$avatar = '';
+				                } else {
+				                	if(!empty($profile->department)) {
+					                	$department_id = $profile->department->id;
+					                } else {
+					                	$department_id = 0;
+					                }
+
+					                if(!empty($profile->position)) {
+					                	$position_id = $profile->position->id;
+					                } else {
+					                	$position_id = 0;
+					                }
+					                $avatar = $profile->avatar;
+				                }
+
+				                $user_session = array(
 								   'user_id'		=> $current_user->id,
 								   'user_info'		=> $current_user->username,
-								   'department_id'  => $profile->department->id,
-								   'position_id'  	=> $profile->position->id,
-								   'avatar'			=> $profile->avatar,
-								));
-
-                                Response::redirect('user/index');
+								   'group_id'		=> $current_user->group_id,
+								   'department_id'  => $department_id,
+								   'position_id'  	=> $position_id,
+								   'avatar'			=> $avatar,
+								);
+                                Session::set($user_session);
+                                Session::set_flash('success', e('Welcome, '.$current_user->username));
+                                if ($profile->flag == 0) {
+                                	Response::redirect('login/changepassword');
+                                } else {
+                                	Response::redirect('user/index');
+                                }
                                 break;
                             }
                         }
@@ -65,7 +92,6 @@ class Controller_Login extends Controller_Template
         // $this->template->title = 'Login';
         // $this->template->content = View::forge('login', array('val' => $val), false);
         return Response::forge(View::forge('login', array('val' => $val), false));
-        // View::set_global('val', $val);
 	}
 
     public function action_register() 
@@ -88,94 +114,55 @@ class Controller_Login extends Controller_Template
                 ->add_rule('valid_email');   
             // Running validation   
             if ($val->run()) {        
-                try {            
+                try {
                     // Since validation passed, we try to create a user            
-                    $user_id = Auth::create_user(                
-                        Input::post('username'),                
-                        Input::post('password'),                
-                        Input::post('email')       
-                    );
+                    // $user_id = Auth::create_user(                
+                    //     Input::post('username'),                
+                    //     Input::post('password'),                
+                    //     Input::post('email')       
+                    // );
 
-                    $profile = new Model_Profile();
-                    $profile->user_id = $user_id;
-                    $profile->save();
+                    // $profile = new Model_Profile();
+                    // $profile->user_id = $user_id;
+                    // $profile->save();
 
-                    if ($user_id && $profile->save() ) {
-                        $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
-                        $data = new Model_Hash; 
-                        $data->hash = $hash;
-                        // $data->hash_type = SIGNUP;
-                        $data->hash_type = 0;
-                        $data->user_id = $user_id;
-                        $data->expired_at = time() + (1 * 24 * 60 * 60);
-
-                        $data->save(); 
-                    }
-
-                    // Send email
-                    // Create an instance
-                    // Use the default config and change the driver
-                    $username = Input::post('username');
-                    \Package::load('email');
-                    $email = \Email::forge('my_defaults',array(
-                        'driver' => 'smtp',
-                    ));
-                    $email->subject('Verify your account.');
-
-                    /*$email->body(\View::forge(        
-                        'email/activation',       
-                         array(            
-                            'hash' => $hash,
-                            'username' => $username,       
-                             )    
-                         )->render() 
-                    );*/
-
-                    $email->body(\View::forge('email/activation')
-                        ->set('url', \Uri::create('activation/' . base64_encode($hash) . '/'), false)
-                        ->set()
-                        ->render() 
-                    );
-
-                    $email->from('azzurricatenacciomilano@gmail.com', 'Support Team');
-                    $email->to('manhnvit@gmail.com', 'Demo');
-
-
-                    // if ($user_id && $profile->save()) {
+                    // if ($user_id) {
                     //     $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
                     //     $data = new Model_Hash; 
                     //     $data->hash = $hash;
                     //     // $data->hash_type = SIGNUP;
                     //     $data->hash_type = 0;
                     //     $data->user_id = $user_id;
-                    //     $data->expired = time();
+                    //     $data->expired_at = time() + (1 * 24 * 60 * 60);
 
-                    //     // send an email out with a reset link
-                    //     \Package::load('email');
-                    //     $email = \Email::forge();
-
-                    //     // use a view file to generate the email message
-                    //     $email->html_body(
-                    //         \Theme::instance()->view('email/activation')
-                    //             ->set('url', \Uri::create('activation/' . base64_encode($hash) . '/'), false)
-                    //             ->set('user', $user, false)
-                    //             ->render()
-                    //     );
-
-                    //     // give it a subject
-                    //     $email->subject(__('login.password-recovery'));
-
-                    //     // add from- and to address
-                    //     // $from = \Config::get('application.email-addresses.from.website', 'website@example.org');
-                    //     // $email->from($from['email'], $from['name']);
-                    //     $email->from('azzurricatenacciomilano@gmail.com', 'Support Team');
-                    //     $email->to('manhnvit@gmail.com', 'Test');
+                    //     $data->save(); 
                     // }
 
+                    //Send email
+                    //Create an instance
+                    //Use the default config and change the driver
+                    \Package::load('email');
+                    $email = \Email::forge('my_defaults',array(
+                        'driver' => 'smtp',
+                    ));
+                    // $email->subject('Verify your account.');
+                    // $url = \Uri::create('activation/' . base64_encode($hash) . '/');
+
+                    // Create an instance
+					$email = Email::forge();
+
+					// Set a subject
+					$email->subject('This is the subject');
+
+					// And set the body.
+					$email->body('This is my message');
+
+                    $email->from('azzurricatenacciomilano@gmail.com', 'Support Team');
+                    $email->to('manhnvit@gmail.com', 'Demo');
                     try {
                         $email->send();
-                        Session::set_flash('success', e('Verification email send successfully. Please confirm for active account.'));
-                        Response::redirect('login'); 
+                        // return Response::forge(View::forge('login/waiting', array('val' => $val), false));
+                        return Response::redirect('login/waiting');
                     } catch(\EmailValidationFailedException $e) {
                         // The validation failed
                         \Debug::dump($e);               
@@ -193,8 +180,7 @@ class Controller_Login extends Controller_Template
                     Session::set_flash('error', e($e->getMessage()));
                 }
             } else {      
-                 // At least one field is not correct
-           //     Session::set_flash('error', $val->error());        
+                 // At least one field is not correct        
                 Session::set_flash('error', e($val->error()));    
             }
         }
@@ -204,7 +190,13 @@ class Controller_Login extends Controller_Template
     {
         Auth::logout();
         Session::set_flash('success', 'You have been successfully logged out');
+        Session::delete('user_session');
         Response::redirect('login');
+    }
+
+    public function action_changepassword() 
+    {
+        return Response::forge(View::forge('login/waiting'));
     }
 
 }

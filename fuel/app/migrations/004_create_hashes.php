@@ -11,7 +11,7 @@ class Create_hashes
 			'user_id' => array('constraint' => 11, 'type' => 'int'),
 			'hash' => array('constraint' => 255, 'type' => 'varchar'),
 			'hash_type' => array('constraint' => 2, 'type' => 'int'),
-			'expired_at' => array('type' => 'timestamp'),
+			'expired_at' => array('constraint' => 11, 'type' => 'int', 'null' => true),
 			'created_at' => array('constraint' => 11, 'type' => 'int', 'null' => true),
 			'updated_at' => array('constraint' => 11, 'type' => 'int', 'null' => true),
 

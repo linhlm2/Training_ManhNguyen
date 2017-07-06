@@ -71,10 +71,14 @@
 				<div class="form-group">
 					<?php echo Form::label('Department *', 'department', array('class'=>'control-label col-md-3 col-sm-3 col-xs-12')); ?>
 					<div class="col-md-2 col-sm-2 col-xs-12">
-						<?php 
-							echo Form::select('department', 'Choose', $departments, array('class'=>'form-control col-md-7 col-xs-12'));
-
-						?>
+						<?php if(empty($departments)) : ?>
+				            <?php echo 'Please create departments before create user!'; ?>
+				        <?php else : ?>
+				        	<?php 
+								echo Form::select('department', 'Choose', $departments, array('class'=>'form-control col-md-7 col-xs-12'));
+							?>
+				        <?php endif; ?>
+						
 					</div>	
 				</div>
 
@@ -82,18 +86,24 @@
 			        <label class="control-label col-md-3 col-sm-3 col-xs-12">Postision <span class="required" >* </span></label>
 			        <div class="col-md-6 col-sm-6 col-xs-12">
 			          	<div id="position" class="btn-group" data-toggle="buttons">
-				            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
-				              	<!-- <input type="radio" name="position" value="male"> &nbsp; Male &nbsp; -->
+				           <!--  <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
 				              	<input type="radio" class="flat" name="position" id="positionM" value="staff" checked="" required /> &nbsp; Staff &nbsp;
 				            </label>
 				            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
-				              	<!-- <input type="radio" name="position" value="female"> Female -->
 				              	<input type="radio" class="flat" name="position" id="positionF" value="dod" /> Deputy of department
 				            </label>
 				            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
-				              	<!-- <input type="radio" name="position" value="female"> Female -->
 				              	<input type="radio" class="flat" name="position" id="positionF" value="hod" /> Head of department
-				            </label>
+				            </label> -->
+				            <?php if(empty($positions)) : ?>
+				            	<?php echo 'Please create positions before create user!'; ?>
+				            <?php else : ?>
+				            	<?php foreach ($positions as $key => $position) : ?>
+				            		<label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
+						              	<input type="radio" class="flat" name="position" value="<?php echo $position->id; ?>" /> <?php echo $position->name; ?>
+						            </label>
+				            	<?php endforeach; ?>	
+				            <?php endif; ?>
 			          	</div>
 			        </div>
 		      	</div>
