@@ -72,8 +72,9 @@ class Controller_Login extends Controller
 								);
                                 Session::set($user_session);
                                 Session::set_flash('success', e('Welcome, '.$current_user->username));
-                                if ($profile->flag == 0) {
-                                	Response::redirect('login/changepassword');
+                                if (!empty($profile)) {
+                                	if( $profile->flag == 0 )
+                                		Response::redirect('user/changepassword');
                                 } else {
                                 	Response::redirect('user/index');
                                 }
@@ -116,53 +117,41 @@ class Controller_Login extends Controller
             if ($val->run()) {        
                 try {
                     // Since validation passed, we try to create a user            
-                    // $user_id = Auth::create_user(                
-                    //     Input::post('username'),                
-                    //     Input::post('password'),                
-                    //     Input::post('email')       
-                    // );
+                    $user_id = Auth::create_user(                
+                        Input::post('username'),                
+                        Input::post('password'),                
+                        Input::post('email')       
+                    );
 
-                    // $profile = new Model_Profile();
-                    // $profile->user_id = $user_id;
-                    // $profile->save();
+                    $profile = new Model_Profile();
+                    $profile->user_id = $user_id;
+                    $profile->save();
 
-                    // if ($user_id) {
-                    //     $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
-                    //     $data = new Model_Hash; 
-                    //     $data->hash = $hash;
-                    //     // $data->hash_type = SIGNUP;
-                    //     $data->hash_type = 0;
-                    //     $data->user_id = $user_id;
-                    //     $data->expired_at = time() + (1 * 24 * 60 * 60);
+                    if ($user_id) {
+                        $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
+                        $data = new Model_Hash; 
+                        $data->hash = $hash;
+                        // $data->hash_type = SIGNUP;
+                        $data->hash_type = 0;
+                        $data->user_id = $user_id;
+                        $data->expired_at = time() + (1 * 24 * 60 * 60);
 
-                    //     $data->save(); 
-                    // }
+                        $data->save(); 
+                    }
 
-                    //Send email
-                    //Create an instance
-                    //Use the default config and change the driver
                     \Package::load('email');
-                    $email = \Email::forge('my_defaults',array(
-                        'driver' => 'smtp',
-                    ));
-                    // $email->subject('Verify your account.');
-                    // $url = \Uri::create('activation/' . base64_encode($hash) . '/');
-
-                    // Create an instance
-					$email = Email::forge();
-
-					// Set a subject
-					$email->subject('This is the subject');
-
-					// And set the body.
-					$email->body('This is my message');
-
-                    $email->from('azzurricatenacciomilano@gmail.com', 'Support Team');
+                    $email = Email::forge();
+                    $email->subject('Verify your account.');
+                    $data = array();
+                    $data['url'] = \Uri::create('user/verification/' . base64_encode($hash) . '/');
+                    $email->body(\View::forge('email/activation', $data));
+                   
+					$email->from('manhbker@gmail.com', 'Support Team');
                     $email->to('manhnvit@gmail.com', 'Demo');
                     try {
                         $email->send();
-                        // return Response::forge(View::forge('login/waiting', array('val' => $val), false));
-                        return Response::redirect('login/waiting');
+                        return Response::forge(View::forge('login/waiting', array('val' => $val), false));
+                        // return Response::redirect('login/waiting');
                     } catch(\EmailValidationFailedException $e) {
                         // The validation failed
                         \Debug::dump($e);               
@@ -194,9 +183,69 @@ class Controller_Login extends Controller
         Response::redirect('login');
     }
 
-    public function action_changepassword() 
+    public function action_forgotpassword()
     {
-        return Response::forge(View::forge('login/waiting'));
+    	$val = Validation::forge();
+        if (Input::method() == 'POST') {
+            $val->add('email', 'Email')
+                ->add_rule('valid_email|max_length[255]');
+            $val->add('username', 'Username')
+                ->add_rule('valid_string[alpha,lowercase,numeric]|max_length[50]');
+
+            if ($val->run()){
+                if ( ! Auth::check()) {
+                	$tmp = Model_User::find('first',array(             //record for compare with unique condition
+						'where' => array(
+					        array('username', Input::post('username'))					        
+					    ),
+					    'where' => array(
+					        array('email', Input::post('email'))
+					    ),
+					));
+
+                    if (!empty($tmp)) {									//check exist record
+                        //send email
+                        $hash = \Auth::instance()->hash_password(\Str::random()).$tmp->id;
+                        $data = new Model_Hash; 
+                        $data->hash = $hash;
+                        // $data->hash_type = FORGOT;
+                        $data->hash_type = 1;
+                        $data->user_id = $tmp->id;
+                        $data->expired_at = time() + (1 * 24 * 60 * 60);
+
+                        $data->save();
+                        
+                        \Package::load('email');
+	                    $email = Email::forge();
+	                    $email->subject('Verify your account.');
+	                    $data = array();
+	                    $data['url'] = \Uri::create('user/recoverpassword/' . base64_encode($hash) . '/');
+	                    $email->body(\View::forge('email/activation', $data));
+	                   
+						$email->from('manhbker@gmail.com', 'Support Team');
+	                    $email->to('manhnvit@gmail.com', 'Demo');
+	                    try {
+	                        $email->send();
+	                        return Response::redirect('/');
+	                    } catch(\EmailValidationFailedException $e) {
+	                        // The validation failed
+	                        \Debug::dump($e);               
+	                        Session::set_flash('error',$e->getMessage());
+	                    } catch(\EmailSendingFailedException $e) {
+	                        // The driver could not send the email
+	                        \Debug::dump($e);           
+	                        Session::set_flash('error',$e->getMessage());
+	                    }
+
+                    } else {
+                        Session::set_flash('error', 'The username or email is incorrect!');
+                    }
+                } else {
+                    Session::set_flash('error', 'Already logged in!');
+                }
+            }
+        }
+        return Response::forge(View::forge('forgotpassword', array('val' => $val), false));
     }
 
 }

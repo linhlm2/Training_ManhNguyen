@@ -48,7 +48,21 @@
 		            	<td><?php echo $i++; ?></td>
 			            <td><?php echo $user->username; ?></td>
 			            <td><?php echo $user->email; ?></td>
-			            <td>OK</td>
+			            <td>
+			            	<?php 
+			            		if ($user->group_id == 6) {
+			            			echo 'OK';
+			            		} else {
+			            			if (!empty($user->profile)) {
+			            				echo ($user->profile->active == 1) ? 'OK' : 'None';
+			            			} else {
+			            				echo 'None';
+			            			}
+			            		}
+
+			            	?>
+			            	
+			            </td>
 			            <td><?php echo date('m/d/Y H:i:s', $user->created_at); ?></td>
 			            <td>
 			          		<div class="btn-toolbar">

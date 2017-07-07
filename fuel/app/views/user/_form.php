@@ -21,6 +21,25 @@
 			<br />
 		    <!-- <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left"> -->
 			<?php echo Form::open(array("class"=>"form-horizontal form-label-left")); ?>
+				<?php if(Session::get('group_id') == 6) : ?>
+					<div class="form-group">
+				        <?php echo Form::label('Username *', 'username', array('class'=>'control-label col-md-3 col-sm-3 col-xs-12')); ?>
+				        <div class="col-md-6 col-sm-6 col-xs-12">
+				          	<?php echo Form::input('username', Input::post('username'), 
+				          				array('class' => 'form-control col-md-7 col-xs-12', 'placeholder'=>'Username')); 
+				          	?>
+				        </div>
+			      	</div>
+
+			      	<div class="form-group">
+				        <?php echo Form::label('Email *', 'email', array('class'=>'control-label col-md-3 col-sm-3 col-xs-12')); ?>
+				        <div class="col-md-6 col-sm-6 col-xs-12">
+				          	<?php echo Form::input('email', Input::post('email'), 
+				          				array('class' => 'form-control col-md-7 col-xs-12', 'placeholder'=>'Email')); 
+				          	?>
+				        </div>
+			      	</div>
+				<?php endif ?>
 
 		      	<div class="form-group">
 			        <!-- <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">First Name <span class="required">*</span></label> -->

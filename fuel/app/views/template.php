@@ -46,7 +46,7 @@
             </div>
 
             <div class="clearfix"></div>
-
+            <input type="text" class="hidden" id="base_url" value="<?php echo Uri::create('user/'); ?>">
             <!-- menu profile quick info -->
             <div class="profile clearfix">
               <div class="profile_pic">

@@ -120,8 +120,8 @@ return array(
 		'smtp' => array(
 			'host'     => 'ssl://smtp.gmail.com',
 			'port'     => 465,
-			'username' => 'azzurricatenacciomilano@gmail.com',
-			'password' => 'rikkei123',
+			'username' => 'manhbker@gmail.com',
+			'password' => 'rikkei1234',
 			'timeout'  => 5,
 			'starttls' => false,
 		),

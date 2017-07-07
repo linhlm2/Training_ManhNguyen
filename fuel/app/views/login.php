@@ -87,7 +87,7 @@
 
               <div>
                 <button class="btn btn-default submit" type="submit">Log in</button>
-                <a class="reset_pass" href="forgotpassword">Lost your password?</a>
+                <a class="reset_pass" href="login/forgotpassword">Lost your password?</a>
               </div>
 
               <div class="clearfix"></div>

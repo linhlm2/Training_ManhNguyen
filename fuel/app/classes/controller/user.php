@@ -46,7 +46,17 @@ class Controller_User extends Controller_Template
     public function action_index()
     {
         // die('aa');
-        $data['users'] = Model_User::find('all', array('order_by' => array('created_at' => 'desc')));
+        $data['users'] = Model_User::find('all', array(
+                'related' => array(
+                        'profile' => array(
+                            'related' => array(
+                                'position',
+                                'department',
+                            ),
+                        )
+                    ),
+                'order_by' => array('created_at' => 'desc')
+            ));
         $this->template->title = "Users";
         $this->template->content = View::forge('user/index', $data);
 
@@ -87,7 +97,28 @@ class Controller_User extends Controller_Template
 
         array_unshift($departments, '');
         if (Input::method() == 'POST') {
-            $val = Model_User::validate('create');
+            // $val = Model_User::validate('create');
+            $val = Validation::forge();
+            $val->add('email', 'Email or Username')
+                ->add_rule('required');
+            $val->add('password', 'Password')
+                ->add_rule('required');
+            $val->add('firstname', 'First Name') 
+                ->add_rule('max_length[255]');
+            $val->add('lastname', 'Last Name') 
+                ->add_rule('max_length[255]');
+            $val->add_field('birthday ', 'Birthday')
+                ->add_rule('max_length[255]');
+            $val->add_field('address', 'Address')
+                ->add_rule('max_length[255]');
+            $val->add_field('department ', 'Department')
+                ->add_rule('max_length[255]');
+            $val->add_field('position ', 'Position')
+                ->add_rule('max_length[255]');
+            $val->add_field('phone', 'Phone')
+                ->add_rule('max_length[20]');
+            $val->add_field('gender', 'Gender')
+                ->add_rule('match_collection[M,F]');
 
             if ($val->run()) {
                 $user_id = Auth::create_user(                
@@ -98,6 +129,14 @@ class Controller_User extends Controller_Template
 
                 $profile = new Model_Profile();
                 $profile->user_id = $user_id;
+                $profile->firstname = Input::post('firstname');
+                $profile->lastname = Input::post('lastname');
+                $profile->birthday = Input::post('birthday');
+                $profile->deparment = Input::post('deparment');
+                $profile->position = Input::post('position');
+                $profile->address = Input::post('address');
+                $profile->phone = Input::post('phone');
+                $profile->gender = Input::post('gender');
                 $profile->save();
 
                 if ($user_id) {
@@ -186,6 +225,12 @@ class Controller_User extends Controller_Template
     public function action_verification($hash = NULL)
     {
         if (Input::method() == 'GET') {
+            // decode the hash
+            $hash = base64_decode($hash);
+        
+            // get the userid from the hash
+            $user_id = substr($hash, 44);
+
             $hashinfo = Model_Hash::find('first', array(
                 'where' => array(
                     array('hash', $hash),
@@ -193,39 +238,77 @@ class Controller_User extends Controller_Template
             ));
 
             // and find the user with this id
-            if ($user = \Model\Auth_User::find_by_id($hashinfo->user_id)) {
+            if ($user = Model_User::find_by_id($hashinfo->user_id)) {
                 // do we have this hash for this user, and hasn't it expired yet (we allow for 24 hours response)?
                 if (isset($user) and (time() - $hashinfo->created_at < 86400)) {
-                    // invalidate the hash
-                    \Auth::update_user(
-                        array(
-                            'active' => 1
-                        ),
-                        $user->username
-                    );
-
+                    // invalidate the hash and active user
+                    $now = time();
+                    DB::query('UPDATE `profiles` SET `active` = 1 WHERE `user_id` ='.$user_id)->execute();
+                    DB::query('UPDATE `hashes` SET `expired_at` = '.$now.' WHERE `user_id` ='.$user_id)->execute();
                     // log the user in and go to the profile to change the password
                     if (\Auth::instance()->force_login($user->id)) {
                         Session::set_flash('success', e('Verification successfully.'));
-                        \Response::redirect('admin/index');
+                        \Response::redirect('user/index');
                     }
                 }
             }
 
-            return View::forge('admin/waitverify');
+            // return View::forge('admin/waitverify');
         }
     }
 
-    public function action_forgotpassword()
+    public function action_recoverpassword($hash = NULL)
     {
-        return Response::forge(View::forge('forgotpassword'));
+        if (Input::method() == 'GET') {
+            // decode the hash
+            $hash = base64_decode($hash);
+        
+            // get the userid from the hash
+            $user_id = substr($hash, 44);
+
+            $hashinfo = Model_Hash::find('first', array(
+                'where' => array(
+                    array('hash', $hash),
+                ),
+            ));
+
+            // and find the user with this id
+            if ($user = Model_User::find_by_id($hashinfo->user_id)) {
+                // do we have this hash for this user, and hasn't it expired yet (we allow for 24 hours response)?
+                if (isset($user) and (time() - $hashinfo->created_at < 86400)) {
+                    \Auth::update_user(
+                        array(
+                            'lostpassword_hash' => null,
+                            'lostpassword_created' => null
+                        ),
+                        $user->username
+                    );
+                    Auth::update_user(
+                        array(
+                            'password' => '12345678',    // set a new password
+                        ),
+                        $user->username
+                    );
+                    DB::query('UPDATE `profiles` SET `flag` = 0 WHERE `user_id` ='.$user_id)->execute();
+                    DB::query('UPDATE `hashes` SET `expired_at` = '.$now.' WHERE `user_id` ='.$user_id)->execute();
+                    // log the user in and go to the profile to change the password
+                    if (\Auth::instance()->force_login($user->id)) {
+                        Session::set_flash('success', e('Verification successfully.'));
+                        \Response::redirect('user/index');
+                    }
+                }
+            }
+
+            // return View::forge('admin/waitverify');
+        }
     }
 
-    public function action_changeemail()
+
+    public function action_changepassword() 
     {
-        \Debug::dump(); die();
-        $this->template->title = 'Change Email';
-        $this->template->content = View::forge('admin/changeemail');
+        // return Response::forge(View::forge('user/changepassword'));
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/changepassword');
     }
 
     public function action_uploadavatar()
@@ -257,6 +340,11 @@ class Controller_User extends Controller_Template
             // $file['errors'] contains an array of all error occurred
             // each array element is an an array containing 'error' and 'message'
         }
+    }
+
+    public function post_resetmultiple()
+    {
+        \Debug::dump('aaaaaaaa'); die();
     }
 
 }

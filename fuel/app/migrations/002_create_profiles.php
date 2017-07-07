@@ -17,6 +17,7 @@ class Create_profiles
 			'department_id' => array('constraint' => 11, 'type' => 'int', 'null' => true),
 			'position_id' => array('constraint' => 11, 'type' => 'int', 'null' => true),
 			'flag' => array('constraint' => 1, 'type' => 'tinyint', 'default' => 0),
+			'active'=> array('constraint' => 1, 'type' => 'tinyint', 'default' => 0),
 			'phone' => array('constraint' => 20, 'type' => 'varchar', 'null' => true),
 			'gender' => array('constraint' => 1, 'type' => 'int', 'null' => true),
 			'deleted_at' => array('constraint' => 11, 'type' => 'int', 'null' => true),
