@@ -1,25 +1,3 @@
-// function getValueChecked() {
-// 	var selected = new Array();
-// 	$(document).ready(function() {
-// 	  $("input:checkbox[name=table_records]:checked").each(function() {
-// 	       selected.push($(this).val());
-// 	  });
-// 	});
-// }
-
-// $( "#reset_password" ).click(function() {
-// 	var selected = new Array();
-// 	$(document).ready(function() {
-// 	  $("input:checkbox[name=table_records]:checked").each(function() {
-// 	       selected.push($(this).val());
-// 	  });
-// 	});
-// 	// var a = new Array();
-// 	// a = getValueChecked();
-// 	alert(selected);
-// });
-
-
 $( "#reset_password" ).click(function() {
 	var base_url = $('#base_url').val();
 	var selected = new Array();
@@ -39,6 +17,7 @@ $( "#reset_password" ).click(function() {
        	url: base_url + 'resetmultiple',
        	data: {selected: selected},
        	success:function(rs){
+             console.log(rs);
              alert(rs);
       	}
     });       

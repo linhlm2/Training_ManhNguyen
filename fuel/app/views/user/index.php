@@ -41,39 +41,46 @@
 	          	<tbody>
 		          	<?php $i = 1; ?>
 		          	<?php foreach ($users as $user): ?>
-		            <tr>
-		            	<td class="a-center">
-		                  	<input type="checkbox" class="flat resetPassword" name="table_records" value="<?php echo $user->id; ?>">
-		                </td>
-		            	<td><?php echo $i++; ?></td>
-			            <td><?php echo $user->username; ?></td>
-			            <td><?php echo $user->email; ?></td>
-			            <td>
+		          		<?php if($user->group_id == 2) continue; ?>
+			            <tr>
 			            	<?php 
-			            		if ($user->group_id == 6) {
-			            			echo 'OK';
-			            		} else {
-			            			if (!empty($user->profile)) {
-			            				echo ($user->profile->active == 1) ? 'OK' : 'None';
-			            			} else {
-			            				echo 'None';
-			            			}
-			            		}
-
+			            		if($user->group_id !== 1) 
+			            			$disable = 'disabled';
+			            		else 
+			            			$disable = '';
 			            	?>
-			            	
-			            </td>
-			            <td><?php echo date('m/d/Y H:i:s', $user->created_at); ?></td>
-			            <td>
-			          		<div class="btn-toolbar">
-								<div class="btn-group">
-									<?php echo Html::anchor('user/view/'.$user->id, '<i class="icon-eye-open"></i> View', array('class' => 'btn btn-default btn-sm')); ?>						
-									<?php echo Html::anchor('user/edit/'.$user->id, '<i class="icon-wrench"></i> Edit', array('class' => 'btn btn-default btn-sm')); ?>						
-									<?php echo Html::anchor('user/delete/'.$user->id, '<i class="icon-trash icon-white"></i> Delete', array('class' => 'btn btn-sm btn-danger', 'onclick' => "return confirm('Are you sure?')")); ?>					
+			            	<td class="a-center">
+			                  	<input type="checkbox" class="flat resetPassword" <?php //echo $disable; ?> name="table_records" value="<?php echo $user->id; ?>">
+			                </td>
+			            	<td><?php echo $i++; ?></td>
+				            <td><?php echo $user->username; ?></td>
+				            <td><?php echo $user->email; ?></td>
+				            <td>
+				            	<?php 
+				            		if ($user->group_id == 6) {
+				            			echo 'OK';
+				            		} else {
+				            			if (!empty($user->profile)) {
+				            				echo ($user->profile->active == 1) ? 'OK' : 'None';
+				            			} else {
+				            				echo 'None';
+				            			}
+				            		}
+
+				            	?>
+				            	
+				            </td>
+				            <td><?php echo date('m/d/Y H:i:s', $user->created_at); ?></td>
+				            <td>
+				          		<div class="btn-toolbar">
+									<div class="btn-group">
+										<?php echo Html::anchor('user/view/'.$user->id, '<i class="icon-eye-open"></i> View', array('class' => 'btn btn-default btn-sm')); ?>						
+										<?php echo Html::anchor('user/edit/'.$user->id, '<i class="icon-wrench"></i> Edit', array('class' => 'btn btn-default btn-sm')); ?>						
+										<?php echo Html::anchor('user/delete/'.$user->id, '<i class="icon-trash icon-white"></i> Delete', array('class' => 'btn btn-sm btn-danger', 'onclick' => "return confirm('Are you sure?')")); ?>					
+									</div>
 								</div>
-							</div>
-			          	</td>
-		            </tr>
+				          	</td>
+			            </tr>
 		            <?php endforeach; ?>
 		         </tbody>
 	        </table>

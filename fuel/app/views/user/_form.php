@@ -64,19 +64,6 @@
 			        </div>
 		      	</div>
 
-		      	<!-- <div class="form-group"> -->
-			        <!-- <label class="control-label col-md-3 col-sm-3 col-xs-12">Date Of Birth <span class="required">*</span></label>
-			        <div class="col-md-4 col-sm-4 col-xs-12 date" id="myDatepicker"> -->
-			          	<!-- <input id="birthday" class="date-picker form-control col-md-7 col-xs-12" required="required" type="text"> -->
-			          	<?php //echo Form::input('birthday', Input::post('birthday', isset($user) ? $user->profile->birthday : ''), 
-			          				//array('class' => 'date-picker form-control col-md-7 col-xs-12', 'placeholder'=>'Birthday', 'id' => 'birthday', 'type' => 'text')); 
-			          	?>
-			          	<!-- <span class="input-group-addon">
-                           <span class="glyphicon glyphicon-calendar"></span>
-                        </span> -->
-			        <!-- </div> -->
-		      	<!-- </div> -->
-
 		      	<div class="form-group">
                 	<label class="control-label col-md-3 col-sm-3 col-xs-12">Date Of Birth <span class="required" >* </span></label>
                     <div class='input-group col-md-2 col-sm-2 col-xs-10' id='birthday' style="padding-left: 10px !important;">

@@ -6,23 +6,22 @@ class Controller_User extends Controller_Template
 	// public function before()
 	// {
 	// 	parent::before();
-	// 	// if (Request::active()->controller !== 'Controller_User' or ! in_array(Request::active()->action, array('index','login','logout','forgotpassword'))) {
- //        // if (Request::active()->controller !== 'Controller_User') {
-	// 		if (Auth::check()){
-	// 			// $admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
-	// 			// if ( ! Auth::member($admin_group_id))
-	// 			// {
-	// 			// 	Session::set_flash('error', e('You don\'t have access to the admin panel'));
-	// 			// 	Response::redirect('/');
-	// 			// }else{
- //                    // die('before function');
-	// 				Response::redirect('user/index');
-	// 			// }
+ //        $user_id = Session::get('user_id');
+ //        $group_id = Session::get('group_id');
+ //        if (!empty($user_id)) {			
+	// 		if ($group_id !== 2) {
+ //                if ($group_id !== 6) {
+ //                    Session::set_flash('error', e('You don\'t have access to the admin panel'));
+ //                    Response::redirect('user/view/'.$user_id);
+ //                } else {
+ //                    Response::redirect('user/index');
+ //                }
 	// 		}else{
- //                die('eeeeee');
  //                Response::redirect('/');
 	// 		}
-	// 	// }
+	// 	} else {
+ //            Response::redirect('/');
+ //        }
 	// }
 
     // public static function _init()
@@ -65,8 +64,6 @@ class Controller_User extends Controller_Template
     public function action_view($id = null)
     {
         is_null($id) and Response::redirect('user');
-
-        // $data['user'] = Model_User::find($id);
         $data['user'] = Model_User::find('first', array(
                     'related' => array(
                         'profile' => array(
@@ -304,9 +301,34 @@ class Controller_User extends Controller_Template
     }
 
 
-    public function action_changepassword() 
+    public function action_changepassword($id= null) 
     {
-        // return Response::forge(View::forge('user/changepassword'));
+        if (Input::method() == 'POST') {
+            $val = Validation::forge();;
+            $val->add('password', 'Password')
+                ->add_rule('required');
+            $val->add('password_confirm', 'Password')
+                ->add_rule('required');
+            if ($val->run()) {
+                if (strnatcmp(Input::post('password'), Input::post('password_confirm')) == 0) {
+                    $user = Model_User::find($id);
+                    $user->password = \Auth::instance()->hash_password(Input::post('password'));
+                    // \Debug::dump($user); die();
+                    $user->save();
+                    if ($user->save()) {
+                        Session::set_flash('success', 'Change password successfully.');
+                        Response::redirect('user/changepassword/'.$id);
+                    } else {
+                        Session::set_flash('error', 'Nothing updated.');
+                    }
+                } else {
+                     Session::set_flash('error', 'Password not the same!');
+                }               
+            } else {
+                Session::set_flash('error', $val->error());
+            }
+        }
+       
         $this->template->title = "Users";
         $this->template->content = View::forge('user/changepassword');
     }
@@ -344,7 +366,44 @@ class Controller_User extends Controller_Template
 
     public function post_resetmultiple()
     {
-        \Debug::dump('aaaaaaaa'); die();
+        $listUserId = Input::post('selected');
+        $strUserId = implode(",", $listUserId);
+        $strGroupId = '1'; 
+        $listUser = DB::query('SELECT id, email FROM `users` WHERE `id` IN ('.$strUserId.') AND group_id IN ('.$strGroupId.')');
+        \Package::load('email');
+        $email = Email::forge();
+        $email->subject('Verify your account.');
+       
+        $email->from('manhbker@gmail.com', 'Support Team');
+        foreach ($listUser as $key => $user) {
+            $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
+            $data = new Model_Hash; 
+            $data->hash = $hash;
+            // $data->hash_type = RESET;
+            $data->hash_type = 2;
+            $data->user_id = $user_id;
+            $data->expired_at = time() + (1 * 24 * 60 * 60);
+
+            $data->save(); 
+
+            $data = array();
+            $data['url'] = \Uri::create('user/verification/' . base64_encode($hash) . '/');
+            $email->body(\View::forge('email/forgotpassword', $data));
+            $email->to($user->email, 'Demo');
+            try {
+                $email->send();
+            } catch(\EmailValidationFailedException $e) {
+                // The validation failed
+                \Debug::dump($e);               
+                Session::set_flash('error',$e->getMessage());
+            } catch(\EmailSendingFailedException $e) {
+                // The driver could not send the email
+                \Debug::dump($e);           
+                Session::set_flash('error',$e->getMessage());
+            }
+        }
+        Session::set_flash('success', e('Reset successfully.'));
+        \Response::redirect('user/index');
     }
 
 }

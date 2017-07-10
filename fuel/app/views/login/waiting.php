@@ -16,7 +16,7 @@
     <div class="text-center text-center">
       <h1 class="">Tooltest</h1>
       <h2>Register Successfully</h2>
-      <p>Verification email send successfully. Please confirm for active account. <a href="#">Enter website <i class="fa fa-sign-in"></i></a>
+      <p>Verification email send successfully. Please confirm for active account.<?php echo Html::anchor('user/index', '<i class="fa fa-sign-i"></i> Enter website'); ?>
       </p>
       <!-- <div class="mid_center">
         <h3>Search</h3>

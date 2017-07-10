@@ -41,8 +41,7 @@ class Controller_Login extends Controller
 		                              	array('user_id', $current_user->id)
 				                    )
 				                ));
-
-
+				                // \Debug::dump($profile); die();
 				                if(empty($profile)) {
 				                	$position_id = 0;
 				                	$department_id = 0;
@@ -74,7 +73,7 @@ class Controller_Login extends Controller
                                 Session::set_flash('success', e('Welcome, '.$current_user->username));
                                 if (!empty($profile)) {
                                 	if( $profile->flag == 0 )
-                                		Response::redirect('user/changepassword');
+                                		Response::redirect('user/changepassword/'.$current_user->id);
                                 } else {
                                 	Response::redirect('user/index');
                                 }
@@ -89,9 +88,6 @@ class Controller_Login extends Controller
                 }
             }
         }
-
-        // $this->template->title = 'Login';
-        // $this->template->content = View::forge('login', array('val' => $val), false);
         return Response::forge(View::forge('login', array('val' => $val), false));
 	}
 
@@ -160,10 +156,7 @@ class Controller_Login extends Controller
                         // The driver could not send the email
                         \Debug::dump($e);           
                         Session::set_flash('error',$e->getMessage());
-                    }
-
-                    // Session::set_flash('success', e('Welcome '.Input::post('username').'!'));
-                    // Response::redirect('admin/index');        
+                    }      
                 } catch (\SimpleUserUpdateException $e) {            
                 // Either the username or email already exists            
                     Session::set_flash('error', e($e->getMessage()));
