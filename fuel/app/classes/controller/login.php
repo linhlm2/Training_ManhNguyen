@@ -74,6 +74,11 @@ class Controller_Login extends Controller
                                 if (!empty($profile)) {
                                 	if( $profile->flag == 0 )
                                 		Response::redirect('user/changepassword/'.$current_user->id);
+                                    else 
+                                        if ($current_user->group_id !== 6)
+                                            Response::redirect('user/view'.$current_user->id);
+                                        else
+                                            Response::redirect('user/index');
                                 } else {
                                 	Response::redirect('user/index');
                                 }
@@ -121,6 +126,8 @@ class Controller_Login extends Controller
 
                     $profile = new Model_Profile();
                     $profile->user_id = $user_id;
+                    $profile->flag = 0;
+                    $profile->active = 0;
                     $profile->save();
 
                     if ($user_id) {

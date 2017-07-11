@@ -159,10 +159,14 @@ class Controller_User extends Controller_Template
 
         $a = Model_Department::find('all');
         $departments = array();
-        foreach ($a as $key => $value){
-            $departments[$value['id']] = $value['name'];
+        if (!empty($a)) {
+            foreach ($a as $key => $value){
+                $departments[$value['id']] = $value['name'];
+            }
+            array_unshift($departments, 'Choose');
         }
-        array_unshift($departments, '');
+        
+        $positions = Model_Position::find('all');
         $user = Model_User::find('first', array(
                     'related' => array(
                         'profile' => array(
@@ -200,6 +204,7 @@ class Controller_User extends Controller_Template
 
         $this->template->set_global('user', $user, false);
         $this->template->set_global('departments', $departments, false);
+        $this->template->set_global('positions', $positions, false);
         $this->template->title = "Users";
         $this->template->content = View::forge('user/edit');
 
@@ -282,7 +287,7 @@ class Controller_User extends Controller_Template
                     );
                     Auth::update_user(
                         array(
-                            'password' => '12345678',    // set a new password
+                            'password' => '111111',    // set a new password
                         ),
                         $user->username
                     );
@@ -311,15 +316,27 @@ class Controller_User extends Controller_Template
                 ->add_rule('required');
             if ($val->run()) {
                 if (strnatcmp(Input::post('password'), Input::post('password_confirm')) == 0) {
-                    $user = Model_User::find($id);
-                    $user->password = \Auth::instance()->hash_password(Input::post('password'));
-                    // \Debug::dump($user); die();
-                    $user->save();
-                    if ($user->save()) {
-                        Session::set_flash('success', 'Change password successfully.');
-                        Response::redirect('user/changepassword/'.$id);
-                    } else {
-                        Session::set_flash('error', 'Nothing updated.');
+                    //transaction code flow
+                    $db = DB::instance();               // get the default connection
+                    $db->start_transaction();           //start transaction
+                    try {
+                        $user = Model_User::find($id);
+                        $user->password = \Auth::instance()->hash_password(Input::post('password'));
+
+                        $db->commit_transaction();      //commit transaction
+
+                        DB::query('UPDATE `profiles` SET `flag` = 1 WHERE `user_id` ='.$id)->execute();
+                        $user->save();
+                        if ($user->save()) {
+                            Session::set_flash('success', 'Change password successfully.');
+                            Response::redirect('user/changepassword/'.$id);
+                        } else {
+                            Session::set_flash('error', 'Nothing updated.');
+                        }
+                    } catch (Exception $e) {
+                        // rollback pending transactional queries
+                        $db->commit_transaction();
+                        throw $e;
                     }
                 } else {
                      Session::set_flash('error', 'Password not the same!');
@@ -333,35 +350,49 @@ class Controller_User extends Controller_Template
         $this->template->content = View::forge('user/changepassword');
     }
 
-    public function action_uploadavatar()
+    public function action_uploadavatar($id)
     {
-        // Custom configuration for this upload
-        $config = array(
-            'path' => DOCROOT.DS.'files',
-            'randomize' => true,
-            'ext_whitelist' => array('img', 'jpg', 'jpeg', 'gif', 'png'),
-        );
+        if (Input::method() == 'POST') {
+            // Custom configuration for this upload
+            $config = array(
+                'path' => DOCROOT.'files',
+                'randomize' => true,
+                'ext_whitelist' => array('img', 'jpg', 'jpeg', 'gif', 'png'),
+            );
 
-        // process the uploaded files in $_FILES
-        Upload::process($config);
+            // process the uploaded files in $_FILES
+            Upload::process($config);
 
-        // if there are any valid files
-        if (Upload::is_valid())
-        {
-            // save them according to the config
-            Upload::save();
+            // if there are any valid files
+            if (Upload::is_valid()) {
+                // save them according to the config
+                Upload::save();
+                $profile = Model_Profile::find('first', array(
+                    'where' => array(
+                        array('user_id', $id),
+                    ),
+                ));
+                $profile->avatar = Upload::get_files()['0']['saved_as'];
+                $profile->save();
+                Session::delete('avatar');
+                $avatar = Upload::get_files()['0']['saved_as'];
+                Session::set('avatar', $avatar);
+                if ($profile->save()) {
+                    Session::set_flash('success', e('Upload successfully.'));
+                    \Response::redirect('user/view/'.$id);
+                }
+            }
 
-            // call a model method to update the database
-            // Model_Uploads::add(Upload::get_files());
+            // and process any errors
+            foreach (Upload::get_errors() as $file)
+            {
+                // $file is an array with all file information,
+                // $file['errors'] contains an array of all error occurred
+                // each array element is an an array containing 'error' and 'message'
+            }
         }
-
-        // and process any errors
-        foreach (Upload::get_errors() as $file)
-        {
-            // $file is an array with all file information,
-            // $file['errors'] contains an array of all error occurred
-            // each array element is an an array containing 'error' and 'message'
-        }
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/uploadavatar');
     }
 
     public function post_resetmultiple()

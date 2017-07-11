@@ -62,7 +62,7 @@ class Model_User extends \Orm\Model
 		$val->add_field('department ', 'Department', 'max_length[255]');
 		$val->add_field('position ', 'Position', 'max_length[255]');
 		$val->add_field('phone', 'Phone', 'max_length[20]');
-		$val->add_field('gender', 'Gender', 'match_collection[M,F]');
+		$val->add_field('gender', 'Gender', 'match_collection[1,0]');
 
 		return $val;
 	}

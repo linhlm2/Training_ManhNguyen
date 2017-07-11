@@ -67,7 +67,7 @@
 		      	<div class="form-group">
                 	<label class="control-label col-md-3 col-sm-3 col-xs-12">Date Of Birth <span class="required" >* </span></label>
                     <div class='input-group col-md-2 col-sm-2 col-xs-10' id='birthday' style="padding-left: 10px !important;">
-                        <input type='text' class="form-control col-md-7 col-xs-12" />
+                        <input type='text' class="form-control col-md-7 col-xs-12" name="birthday" />
                         <span class="input-group-addon">
                            <span class="glyphicon glyphicon-calendar"></span>
                         </span>
@@ -78,7 +78,7 @@
 					<?php echo Form::label('Department *', 'department', array('class'=>'control-label col-md-3 col-sm-3 col-xs-12')); ?>
 					<div class="col-md-2 col-sm-2 col-xs-12">
 						<?php if(empty($departments)) : ?>
-				            <?php echo 'Please create departments before create user!'; ?>
+				            <?php echo 'Please create departments!'; ?>
 				        <?php else : ?>
 				        	<?php 
 								echo Form::select('department', 'Choose', $departments, array('class'=>'form-control col-md-7 col-xs-12'));
@@ -102,11 +102,12 @@
 				              	<input type="radio" class="flat" name="position" id="positionF" value="hod" /> Head of department
 				            </label> -->
 				            <?php if(empty($positions)) : ?>
-				            	<?php echo 'Please create positions before create user!'; ?>
+				            	<?php echo 'Please create positions!'; ?>
 				            <?php else : ?>
 				            	<?php foreach ($positions as $key => $position) : ?>
+				            		<?php ($position->id == $user->profile->position_id) ? $checked = 'checked' : $checked = ''; ?>
 				            		<label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
-						              	<input type="radio" class="flat" name="position" value="<?php echo $position->id; ?>" /> <?php echo $position->name; ?>
+						              	<input type="radio" class="flat" name="position" <?php echo $checked; ?> value="<?php echo $position->id; ?>" /> <?php echo $position->name; ?>
 						            </label>
 				            	<?php endforeach; ?>	
 				            <?php endif; ?>
@@ -140,13 +141,15 @@
 			        <label class="control-label col-md-3 col-sm-3 col-xs-12">Gender</label>
 			        <div class="col-md-6 col-sm-6 col-xs-12">
 			          	<div id="gender" class="btn-group" data-toggle="buttons">
+			          		<?php ($user->profile->gender == 0) ? $female = 'checked' : $female = '' ; ?>
+			          		<?php ($user->profile->gender == 1) ? $male = 'checked' : $male = '' ; ?>
 				            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
 				              	<!-- <input type="radio" name="gender" value="male"> &nbsp; Male &nbsp; -->
-				              	<input type="radio" class="flat" name="gender" id="genderM" value="1" checked="" required /> &nbsp; Male &nbsp;
+				              	<input type="radio" class="flat" name="gender" id="genderM" value="1" <?php echo $male; ?> required /> &nbsp; Male &nbsp;
 				            </label>
 				            <label class="btn btn-default" data-toggle-class="btn-primary" data-toggle-passive-class="btn-default">
 				              	<!-- <input type="radio" name="gender" value="female"> Female -->
-				              	<input type="radio" class="flat" name="gender" id="genderF" value="0" /> Female
+				              	<input type="radio" class="flat" name="gender" id="genderF" value="0" <?php echo $female; ?> /> Female
 				            </label>
 			          	</div>
 			        </div>

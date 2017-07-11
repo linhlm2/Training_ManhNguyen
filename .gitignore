@@ -39,3 +39,6 @@ desktop.ini
 # the composer package lock file and install directory
 /composer.lock
 /fuel/vendor
+
+# upload image
+/fuel/public/files/

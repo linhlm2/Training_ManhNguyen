@@ -72,7 +72,8 @@ return array(
 			'assets/vendors/iCheck/skins/flat/',
 			'assets/vendors/bootstrap-progressbar/css/',
 			'assets/vendors/animate.css/',
-			'assets/vendors/bootstrap-datetimepicker/build/css/'
+			'assets/vendors/bootstrap-datetimepicker/build/css/',
+			'assets/vendors/dropzone/dist/min/'
 		),
 		'js'  => array(
 			'assets/vendors/jquery/dist/',
@@ -95,9 +96,12 @@ return array(
 			'assets/vendors/moment/min/',
 			'assets/vendors/bootstrap-daterangepicker/',
 			'assets/build/js/',
-			'assets/vendors/bootstrap-datetimepicker/build/js/'
+			'assets/vendors/bootstrap-datetimepicker/build/js/',
+			'assets/vendors/dropzone/dist/min/'
 		),
-		'img' => array(),
+		'img' => array(
+			'files/',
+		),
 	),
 
 	/**
