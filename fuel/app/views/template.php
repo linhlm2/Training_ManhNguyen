@@ -14,7 +14,7 @@
     <?php echo Asset::css('bootstrap.min.css'); ?>
 
     <!-- Font Awesome -->
-    <?php echo Asset::css('font-awesome.css'); ?>
+    <?php echo Asset::css('font-awesome.min.css'); ?>
 
     <!-- NProgress -->
     <?php echo Asset::css('nprogress.css'); ?>
@@ -31,9 +31,14 @@
     <!-- bootstrap-daterangepicker -->
     <?php echo Asset::css('daterangepicker.css'); ?>
 
+    <!-- Upload Theme Style -->
+
+    <?php echo Asset::css('dropzone.min.css'); ?>
+
     <!-- Custom Theme Style -->
 
     <?php echo Asset::css('custom.min.css'); ?>
+
   </head>
 
   <body class="nav-md">
@@ -46,16 +51,19 @@
             </div>
 
             <div class="clearfix"></div>
-
+            <input type="text" class="hidden" id="base_url" value="<?php echo Uri::create('user/'); ?>">
             <!-- menu profile quick info -->
             <div class="profile clearfix">
               <div class="profile_pic">
                 <!-- <img src="" alt="..." class="img-circle profile_img"> -->
-                <?php echo Asset::img('img.jpg', array('class' => 'img-circle profile_img')) ?>
+                <?php echo Asset::img(Session::get('avatar'), array('class' => 'img-circle profile_img')) ?>
               </div>
               <div class="profile_info">
                 <span>Welcome,</span>
-                <h2>John Doe</h2>
+                <?php if (Session::get('user_info')): ?>
+                  <!-- <h2>John Doe</h2> -->
+                  <h2><?php echo Session::get('user_info'); ?></h2>
+                <?php endif; ?>
               </div>
             </div>
             <!-- /menu profile quick info -->
@@ -68,10 +76,18 @@
                 <h3>General</h3>
                 <ul class="nav side-menu">
                   <li>
-                    <a href="index"><i class="fa fa-home"></i> Home </a>
+                    <?php if (Session::get('group_id') == 6) : ?>
+                      <?php echo Html::anchor('user/index', '<i class="fa fa-home"></i> Home'); ?>
+                    <?php else : ?>
+                      <?php echo Html::anchor('user/view/'.Session::get('user_id'), '<i class="fa fa-home"></i> Home'); ?>
+                    <?php endif; ?>
                   </li>
                   <li>
-                    <a href="index"><i class="fa fa-edit"></i> Department </a>
+                    <!-- <a href="department" id="departmentpage"><i class="fa fa-edit"></i>  </a> -->
+                    <?php echo Html::anchor('department/index', '<i class="fa fa-edit"></i> Department'); ?>
+                  </li>
+                  <li>
+                    <?php echo Html::anchor('position/index', '<i class="fa fa-edit"></i> Position'); ?>
                   </li>
                 </ul>
               </div>
@@ -80,7 +96,7 @@
             <!-- /sidebar menu -->
 
             <!-- /menu footer buttons -->
-            <div class="sidebar-footer hidden-small">
+            <!-- <div class="sidebar-footer hidden-small">
               <a data-toggle="tooltip" data-placement="top" title="Settings">
                 <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
               </a>
@@ -93,7 +109,7 @@
               <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
                 <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
               </a>
-            </div>
+            </div> -->
             <!-- /menu footer buttons -->
           </div>
         </div>
@@ -110,84 +126,15 @@
                 <li class="">
                   <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                     <!-- <img src="images/img.jpg" alt=""> -->
-                    <?php echo Asset::img('img.jpg', array('alt' => '')) ?>John Doe
+                    <?php if (Session::get('user_info')): ?>
+                      <!-- <h2>John Doe</h2> -->
+                      <?php echo Asset::img(Session::get('avatar'), array('alt' => '')) ?><?php echo Session::get('user_info'); ?>
+                    <?php endif; ?>
                     <span class=" fa fa-angle-down"></span>
                   </a>
                   <ul class="dropdown-menu dropdown-usermenu pull-right">
-                    <li><a href="javascript:;"> Profile</a></li>
-                    <li>
-                      <a href="javascript:;">
-                        <span class="badge bg-red pull-right">50%</span>
-                        <span>Settings</span>
-                      </a>
-                    </li>
-                    <li><a href="javascript:;">Help</a></li>
-                    <li><a href="login.html"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
-                  </ul>
-                </li>
-
-                <li role="presentation" class="dropdown">
-                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
-                    <i class="fa fa-envelope-o"></i>
-                    <span class="badge bg-green">6</span>
-                  </a>
-                  <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
-                    <li>
-                      <a>
-                        <span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>
-                        <span>
-                          <span>John Smith</span>
-                          <span class="time">3 mins ago</span>
-                        </span>
-                        <span class="message">
-                          Film festivals used to be do-or-die moments for movie makers. They were where...
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <a>
-                        <span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>
-                        <span>
-                          <span>John Smith</span>
-                          <span class="time">3 mins ago</span>
-                        </span>
-                        <span class="message">
-                          Film festivals used to be do-or-die moments for movie makers. They were where...
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <a>
-                        <span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>
-                        <span>
-                          <span>John Smith</span>
-                          <span class="time">3 mins ago</span>
-                        </span>
-                        <span class="message">
-                          Film festivals used to be do-or-die moments for movie makers. They were where...
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <a>
-                        <span class="image"><img src="images/img.jpg" alt="Profile Image" /></span>
-                        <span>
-                          <span>John Smith</span>
-                          <span class="time">3 mins ago</span>
-                        </span>
-                        <span class="message">
-                          Film festivals used to be do-or-die moments for movie makers. They were where...
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <div class="text-center">
-                        <a>
-                          <strong>See All Alerts</strong>
-                          <i class="fa fa-angle-right"></i>
-                        </a>
-                      </div>
-                    </li>
+                    <li><?php echo Html::anchor('user/view/'.Session::get('user_id'), '<i class="fa fa-info pull-right"></i> Profile'); ?> </li>
+                    <li><?php echo Html::anchor('login/logout/', '<i class="fa fa-sign-out pull-right"></i> Log Out'); ?> </li>
                   </ul>
                 </li>
               </ul>
@@ -266,9 +213,15 @@
 
     <!-- Custom Theme Scripts -->
     <?php echo Asset::js('custom.min.js'); ?>
+
+    <!-- Upload Scripts -->
+    <?php echo Asset::js('dropzone.min.js'); ?>
     
     <!-- Datepicker -->
     <?php echo Asset::js('bootstrap-datetimepicker.min.js') ?>
+
+    <!-- CustomJS -->
+    <?php echo Asset::js('personal.js') ?>
 
   </body>
 </html>

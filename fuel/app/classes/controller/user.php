@@ -1,34 +1,61 @@
 <?php
-
+use \Model\Hash;
 use \Model\Department;
-class Controller_User extends Controller_Base
+class Controller_User extends Controller_Template
 {
 	// public function before()
 	// {
 	// 	parent::before();
-
-	// 	if (Request::active()->controller !== 'Controller_User' or ! in_array(Request::active()->action, array('index','login','logout','forgotpassword'))){
-	// 		if (Auth::check()){
-	// 			$admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
-	// 			if ( ! Auth::member($admin_group_id))
-	// 			{
-	// 				Session::set_flash('error', e('You don\'t have access to the admin panel'));
-	// 				Response::redirect('/');
-	// 			}else{
-	// 				Response::redirect('user/index');
-	// 			}
+ //        $user_id = Session::get('user_id');
+ //        $group_id = Session::get('group_id');
+ //        if (!empty($user_id)) {			
+	// 		if ($group_id !== 2) {
+ //                if ($group_id !== 6) {
+ //                    Session::set_flash('error', e('You don\'t have access to the admin panel'));
+ //                    Response::redirect('user/view/'.$user_id);
+ //                } else {
+ //                    Response::redirect('user/index');
+ //                }
 	// 		}else{
-	// 			die('aaaaaa');
- //                Response::redirect('user/login');
+ //                Response::redirect('/');
 	// 		}
-	// 	}
+	// 	} else {
+ //            Response::redirect('/');
+ //        }
 	// }
 
+    // public static function _init()
+    //     {
+    //         if (Auth::check()){
+    //             $admin_group_id = Config::get('auth.driver', 'Simpleauth') == 'Ormauth' ? 6 : 100;
+    //             // if ( ! Auth::member($admin_group_id)) {
+    //             //     Session::set_flash('error', e('You don\'t have access to the admin panel'));
+    //             //     Response::redirect('/');
+    //             // }else{
+    //             //     die('before function');
+    //                 Response::redirect('user/index');
+    //             // }
+    //         }else{
+    //             Request::forge('login');   
+    //             // return Response::redirect('login');
+    //         }
+    //     }
 
 
     public function action_index()
     {
-        $data['users'] = Model_User::find('all');
+        // die('aa');
+        $data['users'] = Model_User::find('all', array(
+                'related' => array(
+                        'profile' => array(
+                            'related' => array(
+                                'position',
+                                'department',
+                            ),
+                        )
+                    ),
+                'order_by' => array('created_at' => 'desc')
+            ));
         $this->template->title = "Users";
         $this->template->content = View::forge('user/index', $data);
 
@@ -37,14 +64,12 @@ class Controller_User extends Controller_Base
     public function action_view($id = null)
     {
         is_null($id) and Response::redirect('user');
-
-        // $data['user'] = Model_User::find($id);
         $data['user'] = Model_User::find('first', array(
                     'related' => array(
                         'profile' => array(
                             'related' => array(
                                 'position',
-                                // 'department',
+                                'department',
                             ),
                         )
                     ),
@@ -52,8 +77,6 @@ class Controller_User extends Controller_Base
                               array('id', $id)
                     )
                 ));
-        echo \DB::last_query();
-        // \Debug::dump($data['user']); die();
         $this->template->title = "User";
         $this->template->content = View::forge('user/view', $data);
 
@@ -61,8 +84,38 @@ class Controller_User extends Controller_Base
 
     public function action_create()
     {
+        $listDepartment = Model_Department::find('all');
+        $departments = array();
+        foreach ($listDepartment as $key => $value){
+            $departments[$value['id']] = $value['name'];
+        }
+
+        $positions = Model_Position::find('all');
+
+        array_unshift($departments, '');
         if (Input::method() == 'POST') {
-            $val = Model_User::validate('create');
+            // $val = Model_User::validate('create');
+            $val = Validation::forge();
+            $val->add('email', 'Email or Username')
+                ->add_rule('required');
+            $val->add('password', 'Password')
+                ->add_rule('required');
+            $val->add('firstname', 'First Name') 
+                ->add_rule('max_length[255]');
+            $val->add('lastname', 'Last Name') 
+                ->add_rule('max_length[255]');
+            $val->add_field('birthday ', 'Birthday')
+                ->add_rule('max_length[255]');
+            $val->add_field('address', 'Address')
+                ->add_rule('max_length[255]');
+            $val->add_field('department ', 'Department')
+                ->add_rule('max_length[255]');
+            $val->add_field('position ', 'Position')
+                ->add_rule('max_length[255]');
+            $val->add_field('phone', 'Phone')
+                ->add_rule('max_length[20]');
+            $val->add_field('gender', 'Gender')
+                ->add_rule('match_collection[M,F]');
 
             if ($val->run()) {
                 $user_id = Auth::create_user(                
@@ -70,6 +123,18 @@ class Controller_User extends Controller_Base
                     '12345678',                
                     Input::post('email')       
                 );
+
+                $profile = new Model_Profile();
+                $profile->user_id = $user_id;
+                $profile->firstname = Input::post('firstname');
+                $profile->lastname = Input::post('lastname');
+                $profile->birthday = Input::post('birthday');
+                $profile->deparment = Input::post('deparment');
+                $profile->position = Input::post('position');
+                $profile->address = Input::post('address');
+                $profile->phone = Input::post('phone');
+                $profile->gender = Input::post('gender');
+                $profile->save();
 
                 if ($user_id) {
                     Session::set_flash('success', 'Added user #'.$user_id.'.');
@@ -84,7 +149,8 @@ class Controller_User extends Controller_Base
 
         $this->template->title = "Users";
         $this->template->content = View::forge('user/create');
-
+        $this->template->set_global('departments', $departments, false);
+        $this->template->set_global('positions', $positions, false);
     }
 
     public function action_edit($id = null)
@@ -93,10 +159,14 @@ class Controller_User extends Controller_Base
 
         $a = Model_Department::find('all');
         $departments = array();
-        foreach ($a as $key => $value){
-            $departments[$value['id']] = $value['name'];
+        if (!empty($a)) {
+            foreach ($a as $key => $value){
+                $departments[$value['id']] = $value['name'];
+            }
+            array_unshift($departments, 'Choose');
         }
-        array_unshift($departments, '');
+        
+        $positions = Model_Position::find('all');
         $user = Model_User::find('first', array(
                     'related' => array(
                         'profile' => array(
@@ -134,6 +204,7 @@ class Controller_User extends Controller_Base
 
         $this->template->set_global('user', $user, false);
         $this->template->set_global('departments', $departments, false);
+        $this->template->set_global('positions', $positions, false);
         $this->template->title = "Users";
         $this->template->content = View::forge('user/edit');
 
@@ -153,156 +224,15 @@ class Controller_User extends Controller_Base
 
     }
 
-
-
-	public function action_login() 
-    {
-        if (Auth::check()) 
-        {
-            Response::redirect('login');
-        }
-
-        $val = Validation::forge();
-
-        if (Input::method() == 'POST') {
-            // $val->add_field('username', 'Username', 'required|valid_string[alpha,lowercase,numeric]|max_length[50]');
-            // $val->add_field('email', 'Email', 'required|valid_email|max_length[255]');
-            // $val->add_field('password', 'Password', 'required|min_length[6]|max_length[12]');
-            $val->add('email', 'Email or Username')
-                ->add_rule('required');
-            $val->add('password', 'Password')
-                ->add_rule('required|min_length[6]|max_length[12]');
-
-            if ($val->run()){
-                if ( ! Auth::check()) {
-                    if (Auth::login(Input::post('email'), Input::post('password'))){
-                        // assign the user id that lasted updated this record
-                        foreach (\Auth::verified() as $driver) {
-                            if (($id = $driver->get_user_id()) !== false){
-                                // credentials ok, go right in
-                                $current_user = Model\Auth_User::find($id[1]);
-                                Session::set_flash('success', e('Welcome, '.$current_user->username));
-                                Response::redirect('user/index');
-                            }
-                        }
-                    } else {
-                        //$this->template->set_global('login_error', 'The username or password is incorrect!');
-                        Session::set_flash('error', 'The username or password is incorrect!');
-                    }
-                } else {
-                    // $this->template->set_global('login_error', 'Already logged in!');
-                    Session::set_flash('error', 'Already logged in!');
-                }
-            }
-        }
-
-        // $this->template->title = 'Login';
-        // $this->template->content = View::forge('login', array('val' => $val), false);
-        return Response::forge(View::forge('login', array('val' => $val), false));
-        // View::set_global('val', $val);
-    }
-
-    public function action_register() 
-    {
-        //Validate
-        $val = Validation::forge('signup_validation');    
-        $val->add_field(        
-            'username',        
-            'Username',        
-            'required|valid_string[alpha,lowercase,numeric]'    
-            );    
-        $val->add_field(        
-            'password',        
-            'Password',        
-            'required|min_length[6]|max_length[12]'    
-            );    
-        $val->add('email', 'Email')        
-            ->add_rule('required')       
-            ->add_rule('valid_email');
-        // Running validation   
-        if ($val->run()) {        
-            try {            
-                // Since validation passed, we try to create a user            
-                $user_id = Auth::create_user(                
-                    Input::post('username'),                
-                    Input::post('password'),                
-                    Input::post('email')       
-                );
-
-                $profile = new Model_Profile();
-                $profile->user_id = $user_id;
-                $profile->save();
-
-                if ($user_id) {
-                    $hash = \Auth::instance()->hash_password(\Str::random());
-                    $hash = base64_encode($hash);
-
-                    $data = new Model_Hash; 
-                    $data->hash = $hash;
-                    $data->hash_type = SIGNUP;
-                    $data->user_id = $user_id;
-                    $data->expired = time();
-
-                    $data->save(); 
-                }
-
-                // Send email
-                // Create an instance
-                // Use the default config and change the driver
-                $username = Input::post('username');
-                \Package::load('email');
-                $email = \Email::forge('my_defaults',array(
-                    'driver' => 'smtp',
-                ));
-                $email->subject('Verify your account.');
-
-                $email->body(\View::forge(        
-                    'admin/email',       
-                     array(            
-                        'hash' => $hash,
-                        'username' => $username,       
-                         )    
-                     )->render() 
-                );
-
-                $email->from('azzurricatenacciomilano@gmail.com', 'Support Demo App');
-                $email->to('manhnvit@gmail.com', 'Its the Other!');
-                try {
-                    $email->send();
-                    Session::set_flash('success', e('Verification email send successfully. Please confirm for active account.'));
-                    Response::redirect('admin/index'); 
-                } catch(\EmailValidationFailedException $e) {
-                    // The validation failed
-                    \Debug::dump($e);               
-                    Session::set_flash('error',$e->getMessage());
-                } catch(\EmailSendingFailedException $e) {
-                    // The driver could not send the email
-                    \Debug::dump($e);           
-                    Session::set_flash('error',$e->getMessage());
-                }
-
-                // Session::set_flash('success', e('Welcome '.Input::post('username').'!'));
-                // Response::redirect('admin/index');        
-            } catch (\SimpleUserUpdateException $e) {            
-            // Either the username or email already exists            
-                Session::set_flash('error', e($e->getMessage()));
-            }
-        } else {        
-        // At least one field is not correct        
-            Session::set_flash('error', e($val->error()));    
-        }
-    }
-
-    public function action_logout() 
-    {
-        Auth::logout();
-        Session::set_flash('success', 'You have been successfully logged out');
-        Response::redirect('user/login');
-    }
-
     public function action_verification($hash = NULL)
     {
         if (Input::method() == 'GET') {
+            // decode the hash
+            $hash = base64_decode($hash);
+        
+            // get the userid from the hash
+            $user_id = substr($hash, 44);
+
             $hashinfo = Model_Hash::find('first', array(
                 'where' => array(
                     array('hash', $hash),
@@ -310,39 +240,201 @@ class Controller_User extends Controller_Base
             ));
 
             // and find the user with this id
-            if ($user = \Model\Auth_User::find_by_id($hashinfo->user_id)) {
+            if ($user = Model_User::find_by_id($hashinfo->user_id)) {
                 // do we have this hash for this user, and hasn't it expired yet (we allow for 24 hours response)?
                 if (isset($user) and (time() - $hashinfo->created_at < 86400)) {
-                    // invalidate the hash
-                    \Auth::update_user(
-                        array(
-                            'active' => 1
-                        ),
-                        $user->username
-                    );
-
+                    // invalidate the hash and active user
+                    $now = time();
+                    DB::query('UPDATE `profiles` SET `active` = 1 WHERE `user_id` ='.$user_id)->execute();
+                    DB::query('UPDATE `hashes` SET `expired_at` = '.$now.' WHERE `user_id` ='.$user_id)->execute();
                     // log the user in and go to the profile to change the password
                     if (\Auth::instance()->force_login($user->id)) {
                         Session::set_flash('success', e('Verification successfully.'));
-                        \Response::redirect('admin/index');
+                        \Response::redirect('user/index');
                     }
                 }
             }
 
-            return View::forge('admin/waitverify');
+            // return View::forge('admin/waitverify');
         }
     }
 
-    public function action_forgotpassword()
+    public function action_recoverpassword($hash = NULL)
     {
-        return Response::forge(View::forge('forgotpassword'));
+        if (Input::method() == 'GET') {
+            // decode the hash
+            $hash = base64_decode($hash);
+        
+            // get the userid from the hash
+            $user_id = substr($hash, 44);
+
+            $hashinfo = Model_Hash::find('first', array(
+                'where' => array(
+                    array('hash', $hash),
+                ),
+            ));
+
+            // and find the user with this id
+            if ($user = Model_User::find_by_id($hashinfo->user_id)) {
+                // do we have this hash for this user, and hasn't it expired yet (we allow for 24 hours response)?
+                if (isset($user) and (time() - $hashinfo->created_at < 86400)) {
+                    \Auth::update_user(
+                        array(
+                            'lostpassword_hash' => null,
+                            'lostpassword_created' => null
+                        ),
+                        $user->username
+                    );
+                    Auth::update_user(
+                        array(
+                            'password' => '111111',    // set a new password
+                        ),
+                        $user->username
+                    );
+                    DB::query('UPDATE `profiles` SET `flag` = 0 WHERE `user_id` ='.$user_id)->execute();
+                    DB::query('UPDATE `hashes` SET `expired_at` = '.$now.' WHERE `user_id` ='.$user_id)->execute();
+                    // log the user in and go to the profile to change the password
+                    if (\Auth::instance()->force_login($user->id)) {
+                        Session::set_flash('success', e('Verification successfully.'));
+                        \Response::redirect('user/index');
+                    }
+                }
+            }
+
+            // return View::forge('admin/waitverify');
+        }
     }
 
-    public function action_changeemail()
+
+    public function action_changepassword($id= null) 
     {
-        \Debug::dump(); die();
-        $this->template->title = 'Change Email';
-        $this->template->content = View::forge('admin/changeemail');
+        if (Input::method() == 'POST') {
+            $val = Validation::forge();;
+            $val->add('password', 'Password')
+                ->add_rule('required');
+            $val->add('password_confirm', 'Password')
+                ->add_rule('required');
+            if ($val->run()) {
+                if (strnatcmp(Input::post('password'), Input::post('password_confirm')) == 0) {
+                    //transaction code flow
+                    $db = DB::instance();               // get the default connection
+                    $db->start_transaction();           //start transaction
+                    try {
+                        $user = Model_User::find($id);
+                        $user->password = \Auth::instance()->hash_password(Input::post('password'));
+
+                        $db->commit_transaction();      //commit transaction
+
+                        DB::query('UPDATE `profiles` SET `flag` = 1 WHERE `user_id` ='.$id)->execute();
+                        $user->save();
+                        if ($user->save()) {
+                            Session::set_flash('success', 'Change password successfully.');
+                            Response::redirect('user/changepassword/'.$id);
+                        } else {
+                            Session::set_flash('error', 'Nothing updated.');
+                        }
+                    } catch (Exception $e) {
+                        // rollback pending transactional queries
+                        $db->commit_transaction();
+                        throw $e;
+                    }
+                } else {
+                     Session::set_flash('error', 'Password not the same!');
+                }               
+            } else {
+                Session::set_flash('error', $val->error());
+            }
+        }
+       
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/changepassword');
+    }
+
+    public function action_uploadavatar($id)
+    {
+        if (Input::method() == 'POST') {
+            // Custom configuration for this upload
+            $config = array(
+                'path' => DOCROOT.'files',
+                'randomize' => true,
+                'ext_whitelist' => array('img', 'jpg', 'jpeg', 'gif', 'png'),
+            );
+
+            // process the uploaded files in $_FILES
+            Upload::process($config);
+
+            // if there are any valid files
+            if (Upload::is_valid()) {
+                // save them according to the config
+                Upload::save();
+                $profile = Model_Profile::find('first', array(
+                    'where' => array(
+                        array('user_id', $id),
+                    ),
+                ));
+                $profile->avatar = Upload::get_files()['0']['saved_as'];
+                $profile->save();
+                Session::delete('avatar');
+                $avatar = Upload::get_files()['0']['saved_as'];
+                Session::set('avatar', $avatar);
+                if ($profile->save()) {
+                    Session::set_flash('success', e('Upload successfully.'));
+                    \Response::redirect('user/view/'.$id);
+                }
+            }
+
+            // and process any errors
+            foreach (Upload::get_errors() as $file)
+            {
+                // $file is an array with all file information,
+                // $file['errors'] contains an array of all error occurred
+                // each array element is an an array containing 'error' and 'message'
+            }
+        }
+        $this->template->title = "Users";
+        $this->template->content = View::forge('user/uploadavatar');
+    }
+
+    public function post_resetmultiple()
+    {
+        $listUserId = Input::post('selected');
+        $strUserId = implode(",", $listUserId);
+        $strGroupId = '1'; 
+        $listUser = DB::query('SELECT id, email FROM `users` WHERE `id` IN ('.$strUserId.') AND group_id IN ('.$strGroupId.')');
+        \Package::load('email');
+        $email = Email::forge();
+        $email->subject('Verify your account.');
+       
+        $email->from('manhbker@gmail.com', 'Support Team');
+        foreach ($listUser as $key => $user) {
+            $hash = \Auth::instance()->hash_password(\Str::random()).$user_id;
+            $data = new Model_Hash; 
+            $data->hash = $hash;
+            // $data->hash_type = RESET;
+            $data->hash_type = 2;
+            $data->user_id = $user_id;
+            $data->expired_at = time() + (1 * 24 * 60 * 60);
+
+            $data->save(); 
+
+            $data = array();
+            $data['url'] = \Uri::create('user/verification/' . base64_encode($hash) . '/');
+            $email->body(\View::forge('email/forgotpassword', $data));
+            $email->to($user->email, 'Demo');
+            try {
+                $email->send();
+            } catch(\EmailValidationFailedException $e) {
+                // The validation failed
+                \Debug::dump($e);               
+                Session::set_flash('error',$e->getMessage());
+            } catch(\EmailSendingFailedException $e) {
+                // The driver could not send the email
+                \Debug::dump($e);           
+                Session::set_flash('error',$e->getMessage());
+            }
+        }
+        Session::set_flash('success', e('Reset successfully.'));
+        \Response::redirect('user/index');
     }
 
 }

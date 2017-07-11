@@ -33,7 +33,7 @@
       <div class="login_wrapper">
         <div class="animate form login_form">
           <section class="login_content">
-            <?php echo Form::open(array('class'=> 'login-form')); ?>
+            <?php echo Form::open(array('action' => 'login'), array('class'=> 'login-form')); ?>
             <!-- <form> -->
               <h1>Login Form</h1>
               <?php echo Form::csrf(); ?>
@@ -44,7 +44,21 @@
               <?php if (isset($login_error)): ?>
                 <div class="error"><?php echo $login_error; ?></div>
               <?php endif; ?>
-
+              
+              <?php if (Session::get_flash('success')): ?>
+                <div class="alert alert-success alert-dismissable">
+                  <p>
+                  <?php echo implode('</p><p>', (array) Session::get_flash('success')); ?>
+                  </p>
+                </div>
+              <?php endif; ?>
+              <?php if (Session::get_flash('error')): ?>
+                <div class="alert alert-danger alert-dismissable">
+                  <p>
+                  <?php echo implode('</p><p>', (array) Session::get_flash('error')); ?>
+                  </p>
+                </div>
+              <?php endif; ?>
              <!--  <div>
                 <input type="text" class="form-control" placeholder="Username or Email" required="" />
               </div> -->
@@ -73,7 +87,7 @@
 
               <div>
                 <button class="btn btn-default submit" type="submit">Log in</button>
-                <a class="reset_pass" href="forgotpassword">Lost your password?</a>
+                <a class="reset_pass" href="login/forgotpassword">Lost your password?</a>
               </div>
 
               <div class="clearfix"></div>
@@ -98,22 +112,42 @@
 
         <div id="register" class="animate form registration_form">
           <section class="login_content">
-            <form>
+              <?php if (isset($login_error)): ?>
+                <div class="error"><?php echo $login_error; ?></div>
+              <?php endif; ?>
+              
+              <?php if (Session::get_flash('success')): ?>
+                <div class="alert alert-success alert-dismissable">
+                  <p>
+                  <?php echo implode('</p><p>', (array) Session::get_flash('success')); ?>
+                  </p>
+                </div>
+              <?php endif; ?>
+              <?php if (Session::get_flash('error')): ?>
+                <div class="alert alert-danger alert-dismissable">
+                  <p>
+                  <?php echo implode('</p><p>', (array) Session::get_flash('error')); ?>
+                  </p>
+                </div>
+              <?php endif; ?>
+            <?php echo Form::open(array('action' => 'register'), array('class'=> 'register-form')); ?>
+            <?php echo Form::csrf(); ?>
+            <!-- <form> -->
               <h1>Create Account</h1>
               <div>
-                <input type="text" class="form-control" placeholder="Username" required="" />
+                <input type="text" class="form-control" name="username" placeholder="Username" required="" id="register_username" />
               </div>
               <div>
-                <input type="email" class="form-control" placeholder="Email" required="" />
+                <input type="email" class="form-control" name="email" placeholder="Email" required="" id="register_email"/>
               </div>
               <div>
-                <input type="password" class="form-control" placeholder="Password" required="" />
+                <input type="password" class="form-control" name="password" placeholder="Password" required="" id="register_password"/>
               </div>
               <div>
-                <input type="password" class="form-control" placeholder="Confirm Password" required="" />
+                <input type="password" class="form-control" name="password_comfirm" placeholder="Confirm Password" required="" id="register_password_confirm"/>
               </div>
               <div>
-                <a class="btn btn-default submit" href="index.html">Submit</a>
+                <button class="btn btn-default submit" type="submit" value="register" href="register">Submit</button>
               </div>
 
               <div class="clearfix"></div>
@@ -128,10 +162,11 @@
 
                 <div>
                   <h1><i class="fa fa-paw"></i> Gentelella Alela!</h1>
-                  <p>©2016 All Rights Reserved. Gentelella Alela! is a Bootstrap 3 template. Privacy and Terms</p>
+                  <p>©2016 All Rights Reserved. Privacy and Terms</p>
                 </div>
               </div>
-            </form>
+            <!-- </form> -->
+            <?php echo Form::close(); ?>
           </section>
         </div>
       </div>

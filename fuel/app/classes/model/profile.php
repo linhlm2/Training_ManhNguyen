@@ -14,6 +14,8 @@ class Model_Profile extends \Orm\Model_Soft
 		'position_id',
 		'phone',
 		'gender',
+		'flag',
+		'active',
 		'deleted_at',
 		'created_at',
 		'updated_at',

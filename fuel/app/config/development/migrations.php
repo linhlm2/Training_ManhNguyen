@@ -9,6 +9,7 @@ return array (
         0 => '001_create_departments',
         1 => '002_create_profiles',
         2 => '003_create_positions',
+        3 => '004_create_hashes',
       ),
     ),
     'module' => 
