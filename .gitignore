@@ -41,4 +41,4 @@ desktop.ini
 /fuel/vendor
 
 # upload image
-/fuel/public/files/
+/fuel/public/files/*
